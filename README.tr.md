@@ -14,21 +14,21 @@
 </p>
 
 <p align="center">
-  <a href="https://gitlab.com/freeware2/maccalendar/-/releases/permalink/latest/downloads/MacCalendar.zip"><img src="docs/download-button-tr.png" width="320" alt="MacCalendar'ı macOS için indir"></a>
+  <a href="https://gitlab.com/freeware2/maccalendar/-/releases/permalink/latest/downloads/MacCalendar.pkg"><img src="docs/download-button-tr.png" width="320" alt="MacCalendar'ı macOS için indir"></a>
 </p>
 
 <p align="center">
   <a href="https://gitlab.com/freeware2/maccalendar/-/releases">Tüm sürümler</a> · <a href="#kurulum">Kurulum adımları</a> · Arayüz Türkçe ve İngilizcedir
 </p>
 
-> [!warning] MacCalendar'ı ilk açtığınızda macOS onu engeller. Bu beklenen bir durumdur.
-> MacCalendar ücretsizdir ve Apple onayından (notarization) geçmemiştir. Bu yüzden ilk açılışta macOS uygulamayı *doğrulayamadığını* söyler ve açmaz. Bunu bir kez onaylamanız yeterlidir:
+> [!warning] Kurulum paketini ilk açtığınızda macOS onu engeller. Bu beklenen bir durumdur.
+> MacCalendar ücretsizdir ve Apple onayından (notarization) geçmemiştir. Bu yüzden indirdiğiniz `MacCalendar-<sürüm>.pkg` dosyasına ilk kez çift tıkladığınızda macOS paketi *doğrulayamadığını* söyler ve açmaz. Bunu bir kez onaylamanız yeterlidir:
 >
 > 1. Uyarıda **Bitti**'ye tıklayın. *Çöp Sepetine Taşı*'yı **seçmeyin**.
 > 2. **Sistem Ayarları ▸ Gizlilik ve Güvenlik**'i açın ve **Güvenlik** bölümüne inin.
-> 3. MacCalendar'ın engellendiğini belirten satırda **Yine de Aç**'a tıklayın ve parolanız ya da Touch ID ile onaylayın.
+> 3. *"MacCalendar-&lt;sürüm&gt;.pkg" Mac'inizi korumak için engellendi* satırında **Yine de Aç**'a tıklayın ve parolanız ya da Touch ID ile onaylayın. Kurulum açılır.
 >
-> Terminal'i mi tercih edersiniz? `xattr -dr com.apple.quarantine /Applications/MacCalendar.app` komutunu çalıştırıp MacCalendar'ı açın.
+> Terminal'i mi tercih edersiniz? `xattr -d com.apple.quarantine ~/Downloads/MacCalendar-*.pkg` komutunu çalıştırıp pakete çift tıklayın.
 
 ## Ekran görüntüleri
 
@@ -80,34 +80,36 @@ Menü çubuğunda tarih ve iki saat, tıklayınca açılan takvim ve Ayarlar pan
 
 Paket Apple Silicon ve Intel Mac'lerde çalışır; macOS 13 veya üstü gerekir.
 
-1. En son sürümü yukarıdaki [indirme düğmesiyle](https://gitlab.com/freeware2/maccalendar/-/releases/permalink/latest/downloads/MacCalendar.zip) indirin ya da [Sürümler](https://gitlab.com/freeware2/maccalendar/-/releases) sayfasından bir sürüm seçin.
-2. Zip'i açın. Safari genellikle kendiliğinden açar ve İndirilenler'de `MacCalendar-<sürüm>` klasörü belirir; açmazsa zip'e çift tıklayın.
-3. O klasördeki `MacCalendar.app`'i **Uygulamalar** klasörüne sürükleyin. Yanındaki `LICENSE.txt` lisans metnidir; kurulması gerekmez.
-4. MacCalendar'ı açın. Simgesi Dock'ta değil, menü çubuğunda görünür. **İlk açılışta macOS onu engeller:** aşağıdaki adımları bir kez izleyin.
+1. Kurulum paketini yukarıdaki [indirme düğmesiyle](https://gitlab.com/freeware2/maccalendar/-/releases/permalink/latest/downloads/MacCalendar.pkg) indirin ya da [Sürümler](https://gitlab.com/freeware2/maccalendar/-/releases) sayfasından bir sürüm seçin.
+2. `MacCalendar-<sürüm>.pkg` dosyasına çift tıklayın. **İlk açılışta macOS onu engeller:** aşağıdaki adımları bir kez izleyin.
+3. Kurulum adımlarını tamamlayın. MacCalendar **Uygulamalar** klasörüne kurulur, kendiliğinden açılır ve simgesi menü çubuğunda, sistem saatinin yanında belirir.
+4. Bundan sonra MacCalendar Mac her açıldığında kendiliğinden başlar. Bunu Ayarlar'dan (*Mac Açıldığında Otomatik Başlat*) kapatabilirsiniz.
 
-### İlk açılış: MacCalendar'a bir kez izin verin
+Kurulum paketi istemiyor musunuz? Her sürümde bir `MacCalendar-<sürüm>.zip` de var: açın ve `MacCalendar.app`'i **Uygulamalar** klasörüne sürükleyin.
 
-> [!important] macOS, MacCalendar'ı ilk açılışta engeller. Bu bir hata değil, beklenen bir durumdur.
-> MacCalendar bir Apple geliştirici kimliğiyle imzalanmamış ve Apple onayından geçmemiştir; bu yüzden macOS onu doğrulayamaz. Bir kez izin verin, sonrasında normal açılır:
+### İlk açılış: kurulum paketine bir kez izin verin
+
+> [!important] macOS kurulum paketini ilk açılışta engeller. Bu bir hata değil, beklenen bir durumdur.
+> Paket bir Apple geliştirici kimliğiyle imzalanmamış ve Apple onayından geçmemiştir; bu yüzden macOS onu doğrulayamaz. Bir kez izin verin:
 >
-> 1. **MacCalendar'a çift tıklayın.** macOS, Apple'ın onu doğrulayamadığını söyler ve açmaz. **Bitti**'ye tıklayın. *Çöp Sepetine Taşı*'yı **seçmeyin**.
+> 1. **Pakete çift tıklayın.** macOS, Apple'ın onu doğrulayamadığını söyler ve açmaz. **Bitti**'ye tıklayın. *Çöp Sepetine Taşı*'yı **seçmeyin**.
 > 2. **Sistem Ayarları ▸ Gizlilik ve Güvenlik**'i açın ve **Güvenlik** bölümüne inin.
-> 3. MacCalendar'ın engellendiğini belirten satırda **Yine de Aç**'a tıklayın, ardından Mac parolanız ya da Touch ID ile onaylayın. macOS bir kez daha sorarsa yine **Yine de Aç**'ı seçin.
+> 3. Paketin engellendiğini belirten satırda **Yine de Aç**'a tıklayın, ardından Mac parolanız ya da Touch ID ile onaylayın. Kurulum açılır.
 >
-> *Yine de Aç* görünmüyor mu? 1. adımı tekrarlayın: düğme ancak uygulamayı açma denemesinden sonra çıkar. macOS 13 ve 14'te Finder'da MacCalendar'a sağ tıklayıp **Aç**'ı da seçebilirsiniz.
+> *Yine de Aç* görünmüyor mu? 1. adımı tekrarlayın: düğme ancak paketi açma denemesinden sonra çıkar. macOS 13 ve 14'te Finder'da pakete sağ tıklayıp **Aç**'ı da seçebilirsiniz.
 
 > [!tip] Terminal mi kullanıyorsunuz? Tek komut aynı işi yapar.
 > ```bash
-> xattr -dr com.apple.quarantine /Applications/MacCalendar.app
+> xattr -d com.apple.quarantine ~/Downloads/MacCalendar-*.pkg
 > ```
-> macOS'un internetten indirilen dosyalara koyduğu karantina işaretini kaldırır. Sonrasında MacCalendar her zamanki gibi çift tıklamayla açılır.
+> macOS'un internetten indirilen dosyalara koyduğu karantina işaretini kaldırır. Sonrasında paket her zamanki gibi çift tıklamayla açılır.
 
 ### İndirilen dosyayı doğrulama
 
-Zip'i sürüm notlarındaki SHA-256 değeriyle karşılaştırın:
+Paketi sürüm notlarındaki SHA-256 değeriyle karşılaştırın:
 
 ```bash
-shasum -a 256 ~/Downloads/MacCalendar-1.1.1.zip
+shasum -a 256 ~/Downloads/MacCalendar-1.1.2.pkg
 ```
 
 ## Kaynak koddan derleme
@@ -117,6 +119,7 @@ Xcode komut satırı araçları gerekir (macOS 13 veya üstü).
 ```bash
 ./build_app.sh          # MacCalendar.app'i derler (universal: arm64 + x86_64)
 ./build_app.sh --zip    # ayrıca build/release/MacCalendar-<sürüm>.zip ve SHA-256
+scripts/build_pkg.sh    # kurulum paketi: build/release/MacCalendar-<sürüm>.pkg ve SHA-256
 ```
 
 ## Lisans

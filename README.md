@@ -14,21 +14,21 @@
 </p>
 
 <p align="center">
-  <a href="https://gitlab.com/freeware2/maccalendar/-/releases/permalink/latest/downloads/MacCalendar.zip"><img src="docs/download-button.png" width="341" alt="Download MacCalendar for macOS"></a>
+  <a href="https://gitlab.com/freeware2/maccalendar/-/releases/permalink/latest/downloads/MacCalendar.pkg"><img src="docs/download-button.png" width="341" alt="Download MacCalendar for macOS"></a>
 </p>
 
 <p align="center">
   <a href="https://gitlab.com/freeware2/maccalendar/-/releases">All releases</a> · <a href="#download-and-install">Installation steps</a> · The interface is in English and Turkish
 </p>
 
-> [!warning] The first time you open MacCalendar, macOS blocks it. This is expected.
-> MacCalendar is free and not notarized by Apple, so the first time you open it macOS says it *could not verify* the app and does not open it. You only need to allow it once:
+> [!warning] The first time you open the installer, macOS blocks it. This is expected.
+> MacCalendar is free and not notarized by Apple, so when you double-click the downloaded `MacCalendar-<version>.pkg` for the first time, macOS says it *could not verify* the package and does not open it. You only need to allow it once:
 >
 > 1. In the warning, click **Done**. Do **not** click *Move to Trash*.
 > 2. Open **System Settings ▸ Privacy & Security** and scroll down to **Security**.
-> 3. On the line saying MacCalendar was blocked, click **Open Anyway** and confirm with your password or Touch ID.
+> 3. Next to *"MacCalendar-&lt;version&gt;.pkg" was blocked to protect your Mac*, click **Open Anyway** and confirm with your password or Touch ID. The installer opens.
 >
-> Prefer Terminal? Run `xattr -dr com.apple.quarantine /Applications/MacCalendar.app`, then open MacCalendar.
+> Prefer Terminal? Run `xattr -d com.apple.quarantine ~/Downloads/MacCalendar-*.pkg`, then double-click the package.
 
 ## Screenshots
 
@@ -79,34 +79,36 @@ The date and both clocks in the menu bar, the calendar that opens with a click, 
 
 The package runs on Apple Silicon and Intel Macs; macOS 13 or later is required.
 
-1. Download the latest version with the [download button](https://gitlab.com/freeware2/maccalendar/-/releases/permalink/latest/downloads/MacCalendar.zip) at the top, or pick a version on the [Releases](https://gitlab.com/freeware2/maccalendar/-/releases) page.
-2. Open the zip. Safari usually opens it by itself and a `MacCalendar-<version>` folder appears in Downloads; if not, double-click the zip.
-3. Drag `MacCalendar.app` from that folder to **Applications**. The `LICENSE.txt` next to it is the license text; it does not need to be installed.
-4. Open MacCalendar. Its icon appears in the menu bar, not in the Dock. **The first time, macOS blocks it:** follow the steps below once.
+1. Download the installer with the [download button](https://gitlab.com/freeware2/maccalendar/-/releases/permalink/latest/downloads/MacCalendar.pkg) at the top, or pick a version on the [Releases](https://gitlab.com/freeware2/maccalendar/-/releases) page.
+2. Double-click `MacCalendar-<version>.pkg`. **The first time, macOS blocks it:** follow the steps below once.
+3. Click through the installer. MacCalendar is installed in **Applications**, opens by itself and its icon appears in the menu bar, next to the system clock.
+4. From then on MacCalendar starts whenever you log in. You can turn this off in its Settings (*Launch Automatically at Login*).
 
-### First launch: allow MacCalendar once
+Prefer no installer? Each release also has a `MacCalendar-<version>.zip`: open it and drag `MacCalendar.app` to **Applications**.
 
-> [!important] macOS blocks MacCalendar the first time you open it. This is expected, not a fault.
-> MacCalendar is not signed with an Apple developer ID and is not notarized by Apple, so macOS cannot verify it. Allow it once and it opens normally from then on:
+### First launch: allow the installer once
+
+> [!important] macOS blocks the installer the first time you open it. This is expected, not a fault.
+> The package is not signed with an Apple developer ID and is not notarized by Apple, so macOS cannot verify it. Allow it once:
 >
-> 1. **Double-click MacCalendar.** macOS says Apple could not verify it and does not open it. Click **Done**. Do **not** click *Move to Trash*.
+> 1. **Double-click the package.** macOS says Apple could not verify it and does not open it. Click **Done**. Do **not** click *Move to Trash*.
 > 2. **Open System Settings ▸ Privacy & Security** and scroll down to the **Security** section.
-> 3. **Click Open Anyway** on the line saying MacCalendar was blocked, then confirm with your Mac password or Touch ID. If macOS asks once more, choose **Open Anyway** again.
+> 3. **Click Open Anyway** on the line saying the package was blocked, then confirm with your Mac password or Touch ID. The installer opens.
 >
-> Don't see *Open Anyway*? Repeat step 1: the button only appears after an attempt to open the app. On macOS 13 and 14 you can also right-click MacCalendar in the Finder and choose **Open**.
+> Don't see *Open Anyway*? Repeat step 1: the button only appears after an attempt to open the package. On macOS 13 and 14 you can also right-click the package in the Finder and choose **Open**.
 
 > [!tip] Using Terminal? One command does the same.
 > ```bash
-> xattr -dr com.apple.quarantine /Applications/MacCalendar.app
+> xattr -d com.apple.quarantine ~/Downloads/MacCalendar-*.pkg
 > ```
-> It removes the quarantine flag macOS puts on files downloaded from the internet. MacCalendar then opens with a double-click as usual.
+> It removes the quarantine flag macOS puts on files downloaded from the internet. The package then opens with a double-click as usual.
 
 ### Verifying the download
 
-Compare the zip with the SHA-256 value in the release notes:
+Compare the package with the SHA-256 value in the release notes:
 
 ```bash
-shasum -a 256 ~/Downloads/MacCalendar-1.1.1.zip
+shasum -a 256 ~/Downloads/MacCalendar-1.1.2.pkg
 ```
 
 ## Building from source
@@ -116,6 +118,7 @@ Requires the Xcode command line tools (macOS 13 or later).
 ```bash
 ./build_app.sh          # builds MacCalendar.app (universal: arm64 + x86_64)
 ./build_app.sh --zip    # also build/release/MacCalendar-<version>.zip and its SHA-256
+scripts/build_pkg.sh    # installer: build/release/MacCalendar-<version>.pkg and its SHA-256
 ```
 
 ## License

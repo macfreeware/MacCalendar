@@ -1,0 +1,4 @@
+#!/bin/bash
+# Güncelleme sırasında çalışan MacCalendar'ı kapat (en iyi çaba; kurulumu asla engellemez).
+/usr/bin/pkill -x MacCalendar 2>/dev/null
+exit 0
