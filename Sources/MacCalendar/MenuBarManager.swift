@@ -86,7 +86,18 @@ public final class MenuBarManager: NSObject, NSWindowDelegate {
     }
 
     private func setupStatusItem() {
+        // İlk açılışta simgeyi diğer uygulama simgelerinin en sağına (sistem saatinin hemen soluna) yerleştir.
+        // macOS konumu "NSStatusItem Preferred Position <autosaveName>" anahtarında, ekranın sağ kenarına
+        // uzaklık olarak saklar; anahtar yoksa küçük bir değer yazılır. Kullanıcı simgeyi ⌘ ile sürükleyip
+        // taşırsa macOS yeni konumu aynı anahtara yazar ve o konum korunur.
+        let autosaveName = "MacCalendarStatusItem"
+        let positionKey = "NSStatusItem Preferred Position \(autosaveName)"
+        if UserDefaults.standard.object(forKey: positionKey) == nil {
+            UserDefaults.standard.set(1, forKey: positionKey)
+        }
+
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        statusItem.autosaveName = autosaveName
         if let button = statusItem.button {
             button.target = self
             button.action = #selector(toggleFlyout(_:))
