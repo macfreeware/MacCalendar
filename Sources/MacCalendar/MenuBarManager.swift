@@ -1,0 +1,442 @@
+import AppKit
+import SwiftUI
+import Combine
+
+public extension Notification.Name {
+    static let flyoutDidClose = Notification.Name("com.rafetsapanci.MacCalendar.flyoutDidClose")
+}
+
+public final class FlyoutPanel: NSPanel {
+    public override var canBecomeKey: Bool { true }
+    public override var canBecomeMain: Bool { true }
+}
+
+@MainActor
+public final class MenuBarManager: NSObject, NSWindowDelegate {
+    private var statusItem: NSStatusItem!
+    public private(set) var panel: FlyoutPanel!
+    public private(set) var hostingView: NSHostingView<CalendarFlyoutView>!
+    private var timer: Timer?
+    private var cancellables = Set<AnyCancellable>()
+    private let settings = AppSettings.shared
+
+    private var globalClickMonitor: Any?
+    private var localKeyMonitor: Any?
+    private var cachedIconDay: Int = -1
+    private var cachedMenuBarIcon: NSImage?
+    private var currentContentHeight: CGFloat = 516
+    /// Pencerenin sağ kenar hizasını sabitleyerek 2. saat açılıp kapandığında sola/sağa kaymasını önler
+    private var lockedRightEdgeX: CGFloat?
+
+    public override init() {
+        super.init()
+        setupFlyoutPanel()
+        setupStatusItem()
+        setupBindings()
+        startClockTimer()
+    }
+
+    private func setupFlyoutPanel() {
+        let rootView = CalendarFlyoutView(
+            settings: settings,
+            onHeightChange: { [weak self] newHeight in
+                guard let self = self else { return }
+                self.currentContentHeight = newHeight
+                self.repositionPanel(explicitHeight: newHeight)
+            }
+        )
+
+        hostingView = NSHostingView(rootView: rootView)
+        if #available(macOS 13.0, *) {
+            hostingView.sizingOptions = []
+        }
+        hostingView.translatesAutoresizingMaskIntoConstraints = true
+        hostingView.autoresizingMask = [.width, .height]
+
+        let initialSize = hostingView.fittingSize
+        let startWidth: CGFloat = 350
+        let startHeight: CGFloat = max(ceil(initialSize.height), 480)
+        currentContentHeight = startHeight
+
+        let initialRect = NSRect(x: 0, y: 0, width: startWidth, height: startHeight)
+        panel = FlyoutPanel(
+            contentRect: initialRect,
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false
+        )
+        panel.isFloatingPanel = true
+        panel.level = .popUpMenu
+        panel.backgroundColor = .clear
+        panel.isOpaque = false
+        panel.hasShadow = true
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
+        panel.delegate = self
+
+        let container = NSView(frame: initialRect)
+        container.wantsLayer = true
+        container.layer?.backgroundColor = NSColor.clear.cgColor
+        container.autoresizesSubviews = true
+
+        hostingView.frame = container.bounds
+        container.addSubview(hostingView)
+        panel.contentView = container
+    }
+
+    private func setupStatusItem() {
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        if let button = statusItem.button {
+            button.target = self
+            button.action = #selector(toggleFlyout(_:))
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+            button.focusRingType = .none
+        }
+        updateStatusBarTitle()
+    }
+
+    private func setupBindings() {
+        settings.objectWillChange
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    self.updateStatusBarTitle()
+                    if self.panel.isVisible {
+                        self.repositionPanel()
+                    }
+                }
+            }
+            .store(in: &cancellables)
+    }
+
+    private func startClockTimer() {
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.updateStatusBarTitle()
+            }
+        }
+        if let timer {
+            RunLoop.main.add(timer, forMode: .common)
+        }
+    }
+
+    @objc public func toggleFlyout(_ sender: AnyObject?) {
+        if panel.isVisible {
+            closeFlyout()
+        } else {
+            showFlyout()
+        }
+    }
+
+    public func showFlyout() {
+        // Açılış anında menü çubuğu öğesinin gerçek sağ kenarını yakala
+        if let btnFrame = statusItem.button?.window?.frame, btnFrame.origin.x > 50 {
+            lockedRightEdgeX = btnFrame.maxX
+        }
+
+        repositionPanel()
+        NSApp.activate(ignoringOtherApps: true)
+        panel.makeKeyAndOrderFront(nil)
+        // İlk öğenin mavi odak çerçevesi (focus ring) almasını engelle
+        panel.makeFirstResponder(nil)
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.repositionPanel()
+            self.panel.makeFirstResponder(nil)
+        }
+
+        if globalClickMonitor == nil {
+            globalClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+                Task { @MainActor in
+                    self?.closeFlyout()
+                }
+            }
+        }
+
+        if localKeyMonitor == nil {
+            localKeyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+                if event.keyCode == 53 { // ESC
+                    Task { @MainActor in
+                        self?.closeFlyout()
+                    }
+                    return nil
+                }
+                return event
+            }
+        }
+    }
+
+    public func closeFlyout() {
+        panel.orderOut(nil)
+        NotificationCenter.default.post(name: .flyoutDidClose, object: nil)
+        if let monitor = globalClickMonitor {
+            NSEvent.removeMonitor(monitor)
+            globalClickMonitor = nil
+        }
+        if let keyMonitor = localKeyMonitor {
+            NSEvent.removeMonitor(keyMonitor)
+            localKeyMonitor = nil
+        }
+    }
+
+    public func windowDidResignKey(_ notification: Notification) {
+        closeFlyout()
+    }
+
+    /// Pencerenin üst kenarını menü çubuğunun hemen altına ve yatay konumunu sabit sağ referans noktasına kilitler
+    public func repositionPanel(explicitHeight: CGFloat? = nil) {
+        hostingView.layoutSubtreeIfNeeded()
+        let fitting = hostingView.fittingSize
+        let panelWidth: CGFloat = 350
+        let measuredHeight = explicitHeight ?? max(ceil(fitting.height), currentContentHeight)
+        let panelHeight: CGFloat = max(ceil(fitting.height), measuredHeight)
+
+        let buttonWindow = statusItem.button?.window
+        let targetScreen = buttonWindow?.screen ?? NSScreen.main ?? NSScreen.screens.first
+        guard let screen = targetScreen else { return }
+
+        let safeFrame = screen.visibleFrame
+        let topGap: CGFloat = 6.0
+
+        let maxTopY: CGFloat
+        if let btnFrame = buttonWindow?.frame, btnFrame.minY > safeFrame.minY {
+            maxTopY = min(safeFrame.maxY - topGap, btnFrame.minY - topGap)
+        } else {
+            maxTopY = safeFrame.maxY - topGap
+        }
+
+        var originY = maxTopY - panelHeight
+        if originY < safeFrame.minY + 8 {
+            originY = safeFrame.minY + 8
+        }
+
+        // Yatay konum: Pencere açıkken X konumunu sabit tut; açılışta menü çubuğu öğesinin sağ kenarına hizala
+        var originX: CGFloat
+        if panel.isVisible && panel.frame.origin.x > 100 {
+            originX = panel.frame.origin.x
+        } else if let lockedRight = lockedRightEdgeX, lockedRight > 100 {
+            originX = lockedRight - panelWidth
+        } else if let btnFrame = buttonWindow?.frame, btnFrame.origin.x > 50 {
+            lockedRightEdgeX = btnFrame.maxX
+            originX = btnFrame.maxX - panelWidth
+        } else {
+            originX = safeFrame.maxX - panelWidth - 12
+        }
+
+        originX = min(max(originX, safeFrame.minX + 8), safeFrame.maxX - panelWidth - 8)
+
+        let exactRect = NSRect(
+            x: round(originX),
+            y: round(originY),
+            width: panelWidth,
+            height: panelHeight
+        )
+
+        panel.setFrame(exactRect, display: true)
+        if let contentView = panel.contentView {
+            contentView.frame = NSRect(x: 0, y: 0, width: panelWidth, height: panelHeight)
+            hostingView.frame = contentView.bounds
+            hostingView.needsLayout = true
+            hostingView.layoutSubtreeIfNeeded()
+        }
+    }
+
+    public func setFlyoutRootView(_ view: CalendarFlyoutView) {
+        let newHostingView = NSHostingView(rootView: view)
+        if #available(macOS 13.0, *) {
+            newHostingView.sizingOptions = []
+        }
+        newHostingView.translatesAutoresizingMaskIntoConstraints = true
+        newHostingView.autoresizingMask = [.width, .height]
+        self.hostingView = newHostingView
+
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: 350, height: currentContentHeight))
+        container.wantsLayer = true
+        container.layer?.backgroundColor = NSColor.clear.cgColor
+        container.autoresizesSubviews = true
+        newHostingView.frame = container.bounds
+        container.addSubview(newHostingView)
+        panel.contentView = container
+    }
+
+    public var currentPanelFrame: NSRect {
+        panel.frame
+    }
+
+    public var statusItemButton: NSStatusBarButton? {
+        statusItem?.button
+    }
+
+    private func menuBarCalendarIcon(for date: Date) -> NSImage {
+        let day = Calendar.current.component(.day, from: date)
+        if day == cachedIconDay, let existing = cachedMenuBarIcon {
+            return existing
+        }
+
+        let size = NSSize(width: 18, height: 18)
+        let img = NSImage(size: size, flipped: false) { rect in
+            guard let ctx = NSGraphicsContext.current?.cgContext else { return false }
+            ctx.setAllowsAntialiasing(true)
+
+            let cardRect = rect.insetBy(dx: 1.0, dy: 1.0)
+            let radius: CGFloat = 4.0
+            let path = CGPath(roundedRect: cardRect, cornerWidth: radius, cornerHeight: radius, transform: nil)
+
+            ctx.saveGState()
+            ctx.addPath(path)
+            ctx.clip()
+
+            ctx.setFillColor(NSColor.white.withAlphaComponent(0.95).cgColor)
+            ctx.fill(cardRect)
+
+            let headerH: CGFloat = 5.0
+            let headerRect = CGRect(x: cardRect.minX, y: cardRect.maxY - headerH, width: cardRect.width, height: headerH)
+            ctx.setFillColor(NSColor(calibratedRed: 0.94, green: 0.25, blue: 0.28, alpha: 1.0).cgColor)
+            ctx.fill(headerRect)
+
+            let dayStr = "\(day)" as NSString
+            let font = NSFont.monospacedDigitSystemFont(ofSize: 9.5, weight: .bold)
+            let pStyle = NSMutableParagraphStyle()
+            pStyle.alignment = .center
+            let attrs: [NSAttributedString.Key: Any] = [
+                .font: font,
+                .foregroundColor: NSColor(calibratedRed: 0.12, green: 0.18, blue: 0.32, alpha: 1.0),
+                .paragraphStyle: pStyle
+            ]
+            let strSize = dayStr.size(withAttributes: attrs)
+            let bodyH = cardRect.height - headerH
+            let textRect = CGRect(
+                x: cardRect.minX,
+                y: cardRect.minY + (bodyH - strSize.height) * 0.5,
+                width: cardRect.width,
+                height: strSize.height
+            )
+            dayStr.draw(in: textRect, withAttributes: attrs)
+            ctx.restoreGState()
+
+            return true
+        }
+        img.isTemplate = false
+        cachedIconDay = day
+        cachedMenuBarIcon = img
+        return img
+    }
+
+    public func updateStatusBarTitle() {
+        guard let button = statusItem.button else { return }
+        let now = Date()
+
+        let localTimeStr = formatTime(now, timeZone: .current, showSeconds: settings.showSecondsInMenuBar)
+        let dateStr = formatDate(now, style: settings.menuBarDateFormat)
+        let localFlag = settings.localFlag
+        let secondFlag = settings.secondClockFlag
+        let customTrimmed = settings.secondClockCustomLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let formattedLocalPart: String
+        switch settings.menuBarClockBadgeStyle {
+        case .bothFlags, .flagAndCode:
+            formattedLocalPart = "\(localFlag) \(localTimeStr)"
+        case .timeThenFlag, .flagsInMiddle:
+            formattedLocalPart = "\(localTimeStr) \(localFlag)"
+        case .secondFlagOnly:
+            formattedLocalPart = localTimeStr
+        }
+
+        var secondClockPart: String? = nil
+        var separatorBeforeSecondClock = "   "
+        if settings.showSecondClock {
+            let secTime = formatTime(now, timeZone: settings.secondTimeZone, showSeconds: settings.showSecondsInMenuBar)
+            switch settings.menuBarClockBadgeStyle {
+            case .bothFlags, .secondFlagOnly:
+                if !customTrimmed.isEmpty {
+                    secondClockPart = "\(secondFlag) \(customTrimmed) \(secTime)"
+                } else {
+                    secondClockPart = "\(secondFlag) \(secTime)"
+                }
+            case .timeThenFlag:
+                if !customTrimmed.isEmpty {
+                    secondClockPart = "\(customTrimmed) \(secTime) \(secondFlag)"
+                } else {
+                    secondClockPart = "\(secTime) \(secondFlag)"
+                }
+            case .flagsInMiddle:
+                separatorBeforeSecondClock = " "
+                if !customTrimmed.isEmpty {
+                    secondClockPart = "\(secondFlag) \(customTrimmed) \(secTime)"
+                } else {
+                    secondClockPart = "\(secondFlag) \(secTime)"
+                }
+            case .flagAndCode:
+                secondClockPart = "\(secondFlag) \(settings.secondClockShortLabel) \(secTime)"
+            }
+        }
+
+        button.image = menuBarCalendarIcon(for: now)
+        button.imagePosition = .imageLeading
+
+        var segments: [String] = []
+        if !dateStr.isEmpty {
+            segments.append(dateStr)
+        }
+        segments.append(formattedLocalPart)
+
+        var fullText = segments.joined(separator: "  ")
+        if let sec = secondClockPart {
+            fullText += "\(separatorBeforeSecondClock)\(sec)"
+        }
+
+        let textFont = NSFont.monospacedDigitSystemFont(ofSize: 12.5, weight: .medium)
+        let flagFont = NSFont.systemFont(ofSize: 16.5)
+        let baseAttrs: [NSAttributedString.Key: Any] = [
+            .font: textFont,
+            .foregroundColor: NSColor.labelColor
+        ]
+
+        let fullString = " " + fullText
+        let attrString = NSMutableAttributedString(string: fullString, attributes: baseAttrs)
+
+        // Bayrak emojilerini daha büyük fontla ve dikey ortalanmış olarak biçimlendir
+        let nsStr = fullString as NSString
+        var searchIndex = 0
+        while searchIndex < nsStr.length {
+            let range = nsStr.rangeOfComposedCharacterSequence(at: searchIndex)
+            let sub = nsStr.substring(with: range)
+            if sub.unicodeScalars.contains(where: { ($0.value >= 0x1F1E6 && $0.value <= 0x1F1FF) || $0.value == 0x1F30D || $0.value == 0x1F310 }) {
+                attrString.addAttributes([
+                    .font: flagFont,
+                    .baselineOffset: -1.8
+                ], range: range)
+            }
+            searchIndex = range.location + range.length
+        }
+
+        button.attributedTitle = attrString
+    }
+
+    private func formatTime(_ date: Date, timeZone: TimeZone, showSeconds: Bool) -> String {
+        let f = DateFormatter()
+        f.locale = settings.effectiveLocale
+        f.timeZone = timeZone
+        f.dateFormat = showSeconds ? "HH:mm:ss" : "HH:mm"
+        return f.string(from: date)
+    }
+
+    private func formatDate(_ date: Date, style: MenuBarDateFormat) -> String {
+        let f = DateFormatter()
+        f.locale = settings.effectiveLocale
+        switch style {
+        case .dayMonthWeekday:
+            f.dateFormat = "d MMM EEE"
+            return f.string(from: date)
+        case .numeric:
+            f.dateFormat = "dd.MM.yyyy"
+            return f.string(from: date)
+        case .dayMonth:
+            f.dateFormat = "d MMMM"
+            return f.string(from: date)
+        case .hidden:
+            return ""
+        }
+    }
+}
