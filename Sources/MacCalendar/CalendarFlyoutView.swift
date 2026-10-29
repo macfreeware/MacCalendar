@@ -770,7 +770,7 @@ public struct CalendarFlyoutView: View {
                             .font(.system(size: 15, weight: .bold, design: .rounded))
                             .foregroundColor(.primary)
 
-                        Text("v1.1.0")
+                        Text("v\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.1.1")")
                             .font(.system(size: 10, weight: .semibold, design: .monospaced))
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)

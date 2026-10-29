@@ -106,7 +106,7 @@ The package runs on Apple Silicon and Intel Macs; macOS 13 or later is required.
 Compare the zip with the SHA-256 value in the release notes:
 
 ```bash
-shasum -a 256 ~/Downloads/MacCalendar-1.1.0.zip
+shasum -a 256 ~/Downloads/MacCalendar-1.1.1.zip
 ```
 
 ## Building from source

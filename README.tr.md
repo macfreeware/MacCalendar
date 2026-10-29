@@ -107,7 +107,7 @@ Paket Apple Silicon ve Intel Mac'lerde çalışır; macOS 13 veya üstü gerekir
 Zip'i sürüm notlarındaki SHA-256 değeriyle karşılaştırın:
 
 ```bash
-shasum -a 256 ~/Downloads/MacCalendar-1.1.0.zip
+shasum -a 256 ~/Downloads/MacCalendar-1.1.1.zip
 ```
 
 ## Kaynak koddan derleme
