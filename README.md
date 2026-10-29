@@ -32,12 +32,14 @@
 
 ## Screenshots
 
-The calendar flyout with the second clock (Tokyo), and the About panel.
+The calendar flyout with the second clock (Tokyo), the Settings panel and the About panel.
 
 <p align="center">
-  <img src="docs/screenshots/calendar_dual_clock.png" width="320" alt="Calendar flyout: local time with flag, Tokyo as the second clock, the month grid and the quick note field">
+  <img src="docs/screenshots/calendar_dual_clock.png" width="250" alt="Calendar flyout: local time with flag, Tokyo as the second clock, the month grid and the quick note field">
   &nbsp;
-  <img src="docs/screenshots/about_panel.png" width="320" alt="Calendar flyout with the About panel open">
+  <img src="docs/screenshots/settings_panel.png" width="250" alt="Settings panel: second clock city, custom label, language, flag style, date format and launch at login">
+  &nbsp;
+  <img src="docs/screenshots/about_panel.png" width="250" alt="Calendar flyout with the About panel open">
 </p>
 
 ## Features

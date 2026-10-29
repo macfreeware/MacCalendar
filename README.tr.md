@@ -32,12 +32,14 @@
 
 ## Ekran görüntüleri
 
-İkinci saati (Tokyo) açık takvim penceresi ve Hakkında paneli.
+İkinci saati (Tokyo) açık takvim penceresi, Ayarlar paneli ve Hakkında paneli.
 
 <p align="center">
-  <img src="docs/screenshots/calendar_dual_clock.png" width="320" alt="Takvim penceresi: bayraklı yerel saat, ikinci saat olarak Tokyo, aylık takvim ve hızlı not alanı">
+  <img src="docs/screenshots/calendar_dual_clock.png" width="250" alt="Takvim penceresi: bayraklı yerel saat, ikinci saat olarak Tokyo, aylık takvim ve hızlı not alanı">
   &nbsp;
-  <img src="docs/screenshots/about_panel.png" width="320" alt="Hakkında paneli açık takvim penceresi">
+  <img src="docs/screenshots/settings_panel.png" width="250" alt="Ayarlar paneli: ikinci saat şehri, özel etiket, dil, bayrak stili, tarih biçimi ve otomatik başlatma">
+  &nbsp;
+  <img src="docs/screenshots/about_panel.png" width="250" alt="Hakkında paneli açık takvim penceresi">
 </p>
 
 ## Özellikler
