@@ -273,7 +273,14 @@ public final class AppSettings: ObservableObject {
             self.startWeekOnMonday = defaults.bool(forKey: "startWeekOnMonday")
         }
 
-        if defaults.object(forKey: "launchAtLogin") == nil {
+        // Varsayılan: Mac açıldığında otomatik başlat. Uygulama İndirilenler'den taşınmadan açıldıysa macOS onu
+        // geçici bir konumdan (App Translocation) çalıştırır; o yol oturum açılış öğesi olarak kaydedilmez,
+        // varsayılan uygulama kalıcı yerinden (örn. Uygulamalar) ilk açıldığında uygulanır.
+        let isTranslocated = Bundle.main.bundlePath.contains("/AppTranslocation/")
+        let applyLoginDefault = defaults.object(forKey: "launchAtLogin") == nil && !isTranslocated
+        if applyLoginDefault {
+            self.launchAtLogin = true
+        } else if defaults.object(forKey: "launchAtLogin") == nil {
             self.launchAtLogin = (SMAppService.mainApp.status == .enabled)
         } else {
             self.launchAtLogin = defaults.bool(forKey: "launchAtLogin")
@@ -291,6 +298,12 @@ public final class AppSettings: ObservableObject {
             self.dayNotes = decoded
         } else {
             self.dayNotes = [:]
+        }
+
+        // init içinde didSet çalışmadığından varsayılan açık ayar burada kaydedilir ve uygulanır
+        if applyLoginDefault {
+            defaults.set(true, forKey: "launchAtLogin")
+            updateLaunchAtLoginRegistration()
         }
     }
 
