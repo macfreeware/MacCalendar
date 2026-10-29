@@ -4,6 +4,8 @@ import Combine
 
 public extension Notification.Name {
     static let flyoutDidClose = Notification.Name("com.rafetsapanci.MacCalendar.flyoutDidClose")
+    /// Görünüm, açılır pencerenin kapanmasını ister (örn. tarayıcıda bir bağlantı açıldığında)
+    static let flyoutShouldClose = Notification.Name("com.rafetsapanci.MacCalendar.flyoutShouldClose")
 }
 
 public final class FlyoutPanel: NSPanel {
@@ -95,6 +97,13 @@ public final class MenuBarManager: NSObject, NSWindowDelegate {
     }
 
     private func setupBindings() {
+        NotificationCenter.default.publisher(for: .flyoutShouldClose)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.closeFlyout()
+            }
+            .store(in: &cancellables)
+
         settings.objectWillChange
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in

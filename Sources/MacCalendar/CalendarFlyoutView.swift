@@ -797,7 +797,11 @@ public struct CalendarFlyoutView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack {
-                Link(destination: URL(string: "https://gitlab.com/freeware2/maccalendar")!) {
+                Button {
+                    // Link, etkin olmayan (nonactivating) panelde güvenilir açılmıyor; doğrudan tarayıcıya gönder
+                    NSWorkspace.shared.open(URL(string: "https://gitlab.com/freeware2/maccalendar")!)
+                    NotificationCenter.default.post(name: .flyoutShouldClose, object: nil)
+                } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "link")
                             .font(.system(size: 10.5))
@@ -805,6 +809,10 @@ public struct CalendarFlyoutView: View {
                             .font(.system(size: 10.5, weight: .medium))
                     }
                     .foregroundColor(.accentColor)
+                }
+                .buttonStyle(.plain)
+                .onHover { inside in
+                    if inside { NSCursor.pointingHand.push() } else { NSCursor.pop() }
                 }
 
                 Spacer()

@@ -32,14 +32,14 @@
 
 ## Screenshots
 
-The calendar flyout with the second clock (Tokyo), the Settings panel and the About panel.
+The date and both clocks in the menu bar, the calendar that opens with a click, and the same window with Settings open.
+
+<p align="center"><img src="docs/screenshots/menu-bar.png" width="338" alt="Menu bar: calendar icon with the day, the date, Turkey 00:54 and Japan 06:54"></p>
 
 <p align="center">
-  <img src="docs/screenshots/calendar_dual_clock.png" width="250" alt="Calendar flyout: local time with flag, Tokyo as the second clock, the month grid and the quick note field">
+  <img src="docs/screenshots/calendar.png" width="330" alt="Calendar window: local time with flag, Tokyo as the second clock, the month grid and the quick note field">
   &nbsp;
-  <img src="docs/screenshots/settings_panel.png" width="250" alt="Settings panel: second clock city, custom label, language, flag style, date format and launch at login">
-  &nbsp;
-  <img src="docs/screenshots/about_panel.png" width="250" alt="Calendar flyout with the About panel open">
+  <img src="docs/screenshots/settings.png" width="330" alt="Settings panel: second clock city, custom label, language, flag style, date format, seconds, week start and launch at login">
 </p>
 
 ## Features

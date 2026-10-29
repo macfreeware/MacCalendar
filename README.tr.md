@@ -32,14 +32,14 @@
 
 ## Ekran görüntüleri
 
-İkinci saati (Tokyo) açık takvim penceresi, Ayarlar paneli ve Hakkında paneli.
+Menü çubuğunda tarih ve iki saat, tıklayınca açılan takvim ve Ayarlar paneli açıkken aynı pencere.
+
+<p align="center"><img src="docs/screenshots/menu-bar.png" width="338" alt="Menü çubuğu: gün numaralı takvim simgesi, tarih, Türkiye 00:54 ve Japonya 06:54"></p>
 
 <p align="center">
-  <img src="docs/screenshots/calendar_dual_clock.png" width="250" alt="Takvim penceresi: bayraklı yerel saat, ikinci saat olarak Tokyo, aylık takvim ve hızlı not alanı">
+  <img src="docs/screenshots/calendar.png" width="330" alt="Takvim penceresi: bayraklı yerel saat, ikinci saat olarak Tokyo, aylık takvim ve hızlı not alanı">
   &nbsp;
-  <img src="docs/screenshots/settings_panel.png" width="250" alt="Ayarlar paneli: ikinci saat şehri, özel etiket, dil, bayrak stili, tarih biçimi ve otomatik başlatma">
-  &nbsp;
-  <img src="docs/screenshots/about_panel.png" width="250" alt="Hakkında paneli açık takvim penceresi">
+  <img src="docs/screenshots/settings.png" width="330" alt="Ayarlar paneli: ikinci saat şehri, özel etiket, dil, bayrak stili, tarih biçimi, saniye, haftanın ilk günü ve otomatik başlatma">
 </p>
 
 ## Özellikler
