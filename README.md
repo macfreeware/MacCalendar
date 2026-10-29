@@ -13,6 +13,16 @@
   <a href="#türkçe"><b>🇹🇷 Türkçe</b></a> &nbsp;•&nbsp; <a href="#english"><b>🇬🇧 English</b></a>
 </p>
 
+<p align="center">
+  <a href="https://gitlab.com/freeware2/maccalendar/-/releases/permalink/latest/downloads/MacCalendar.zip"><img src="docs/download-button-tr.png" width="320" alt="MacCalendar'ı macOS için indir"></a>
+  &nbsp;
+  <a href="https://gitlab.com/freeware2/maccalendar/-/releases/permalink/latest/downloads/MacCalendar.zip"><img src="docs/download-button.png" width="341" alt="Download MacCalendar for macOS"></a>
+</p>
+
+<p align="center">
+  <a href="https://gitlab.com/freeware2/maccalendar/-/releases">Tüm sürümler / All releases</a> · <a href="#kurulum">Kurulum</a> · <a href="#installation">Installation</a>
+</p>
+
 ---
 
 <a name="türkçe"></a>
@@ -64,16 +74,30 @@ Tamamen **Swift**, **AppKit** ve **SwiftUI** teknolojileri kullanılarak macOS e
 
 ---
 
-### 🚀 Kurulum ve Çalıştırma
+<a name="kurulum"></a>
+### 🚀 Kurulum
 
-#### Hazır Uygulama Paketini Başlatma:
-```bash
-open MacCalendar.app
-```
+macOS 13 veya üstü gerekir. Apple Silicon ve Intel Mac'lerde çalışır (universal).
+
+1. **[MacCalendar.zip](https://gitlab.com/freeware2/maccalendar/-/releases/permalink/latest/downloads/MacCalendar.zip)** dosyasını indirip açın.
+2. `MacCalendar.app`'i **Uygulamalar** klasörüne sürükleyin. Yanındaki `LICENSE.txt` lisans metnidir.
+3. MacCalendar'ı açın; simgesi menü çubuğunda belirir (Dock'ta görünmez).
+
+> [!warning] İlk açılışta macOS MacCalendar'ı engeller. Bu beklenen bir durumdur.
+> MacCalendar ücretsizdir ve Apple onayından (notarization) geçmemiştir; bu yüzden ilk açılışta macOS uygulamayı *doğrulayamadığını* söyler ve açmaz. Yalnızca bir kez izin vermeniz yeterli:
+>
+> 1. Uyarıda **Bitti**'ye tıklayın. *Çöp Sepetine Taşı*'ya tıklamayın.
+> 2. **Sistem Ayarları ▸ Gizlilik ve Güvenlik**'i açıp **Güvenlik** bölümüne inin.
+> 3. MacCalendar'ın engellendiğini söyleyen satırda **Yine de Aç**'a tıklayın ve parolanız ya da Touch ID ile onaylayın.
+>
+> Terminal'i mi tercih edersiniz? `xattr -dr com.apple.quarantine /Applications/MacCalendar.app` komutunu çalıştırıp MacCalendar'ı açın.
+
+Her sürümle birlikte bir SHA-256 değeri yayımlanır: [Sürümler](https://gitlab.com/freeware2/maccalendar/-/releases).
 
 #### Kaynak Koddan Derleme:
 ```bash
-./build_app.sh
+./build_app.sh          # MacCalendar.app
+./build_app.sh --zip    # ayrıca build/release/MacCalendar-<sürüm>.zip ve SHA-256
 ```
 
 ### 📄 Lisans & Depo
@@ -81,6 +105,7 @@ open MacCalendar.app
 - **Geliştirici:** Rafet Sapancı
 - **GitLab Deposu:** [gitlab.com/freeware2/maccalendar](https://gitlab.com/freeware2/maccalendar)
 - **Teknolojiler:** Native Swift, AppKit & SwiftUI (macOS 13+)
+- **Lisans:** GNU GPL sürüm 3 ya da sonrası ([LICENSE](LICENSE))
 
 ---
 
@@ -133,16 +158,30 @@ Built natively using **Swift**, **AppKit**, and **SwiftUI**, it offers top-tier 
 
 ---
 
-### 🚀 Build & Run
+<a name="installation"></a>
+### 🚀 Installation
 
-#### Run the App:
-```bash
-open MacCalendar.app
-```
+Requires macOS 13 or later. Runs on Apple Silicon and Intel Macs (universal).
+
+1. Download **[MacCalendar.zip](https://gitlab.com/freeware2/maccalendar/-/releases/permalink/latest/downloads/MacCalendar.zip)** and open it.
+2. Drag `MacCalendar.app` to **Applications**. The `LICENSE.txt` next to it is the license text.
+3. Open MacCalendar; its icon appears in the menu bar (not in the Dock).
+
+> [!warning] The first time you open MacCalendar, macOS blocks it. This is expected.
+> MacCalendar is free and not notarized by Apple, so the first time you open it macOS says it *could not verify* the app and does not open it. You only need to allow it once:
+>
+> 1. In the warning, click **Done**. Do **not** click *Move to Trash*.
+> 2. Open **System Settings ▸ Privacy & Security** and scroll down to **Security**.
+> 3. On the line saying MacCalendar was blocked, click **Open Anyway** and confirm with your password or Touch ID.
+>
+> Prefer Terminal? Run `xattr -dr com.apple.quarantine /Applications/MacCalendar.app`, then open MacCalendar.
+
+Every release lists a SHA-256 checksum: [Releases](https://gitlab.com/freeware2/maccalendar/-/releases).
 
 #### Compile from Source:
 ```bash
-./build_app.sh
+./build_app.sh          # MacCalendar.app
+./build_app.sh --zip    # also build/release/MacCalendar-<version>.zip and its SHA-256
 ```
 
 ---
@@ -152,3 +191,4 @@ open MacCalendar.app
 - **Developer:** Rafet Sapancı
 - **GitLab Repository:** [gitlab.com/freeware2/maccalendar](https://gitlab.com/freeware2/maccalendar)
 - **Tech Stack:** Native Swift, AppKit & SwiftUI (macOS 13+)
+- **License:** GNU GPL version 3 or later ([LICENSE](LICENSE))
