@@ -108,7 +108,7 @@ Prefer no installer? Each release also has a `MacCalendar-<version>.zip`: open i
 Compare the package with the SHA-256 value in the release notes:
 
 ```bash
-shasum -a 256 ~/Downloads/MacCalendar-1.1.2.pkg
+shasum -a 256 ~/Downloads/MacCalendar-1.1.3.pkg
 ```
 
 ## Building from source

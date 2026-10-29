@@ -219,12 +219,14 @@ public final class AppSettings: ObservableObject {
         didSet { UserDefaults.standard.set(startWeekOnMonday, forKey: "startWeekOnMonday") }
     }
 
+    /// Ayardaki onay kutusu macOS'taki gerçek oturum açılış kaydını (SMAppService) gösterir, saklanan bir tercihi değil.
     @Published public var launchAtLogin: Bool {
         didSet {
-            UserDefaults.standard.set(launchAtLogin, forKey: "launchAtLogin")
+            guard !isSyncingLaunchAtLogin else { return }
             updateLaunchAtLoginRegistration()
         }
     }
+    private var isSyncingLaunchAtLogin = false
 
     @Published public var appLanguage: AppLanguage {
         didSet {
@@ -276,15 +278,17 @@ public final class AppSettings: ObservableObject {
         // Varsayılan: Mac açıldığında otomatik başlat. Uygulama İndirilenler'den taşınmadan açıldıysa macOS onu
         // geçici bir konumdan (App Translocation) çalıştırır; o yol oturum açılış öğesi olarak kaydedilmez,
         // varsayılan uygulama kalıcı yerinden (örn. Uygulamalar) ilk açıldığında uygulanır.
+        // Varsayılan bir kez uygulanır; sonra kullanıcının seçimi (Ayarlar ya da Sistem Ayarları) geçerlidir.
+        // 1.1.2'de kullanıcı ayarı açıkça kapattıysa ("launchAtLogin" = false) varsayılan yeniden uygulanmaz.
         let isTranslocated = Bundle.main.bundlePath.contains("/AppTranslocation/")
-        let applyLoginDefault = defaults.object(forKey: "launchAtLogin") == nil && !isTranslocated
-        if applyLoginDefault {
-            self.launchAtLogin = true
-        } else if defaults.object(forKey: "launchAtLogin") == nil {
-            self.launchAtLogin = (SMAppService.mainApp.status == .enabled)
-        } else {
-            self.launchAtLogin = defaults.bool(forKey: "launchAtLogin")
+        let userTurnedOff = defaults.object(forKey: "launchAtLogin") != nil && !defaults.bool(forKey: "launchAtLogin")
+        if !isTranslocated && !defaults.bool(forKey: "launchAtLoginDefaultApplied") {
+            defaults.set(true, forKey: "launchAtLoginDefaultApplied")
+            if !userTurnedOff && SMAppService.mainApp.status != .enabled {
+                try? SMAppService.mainApp.register()
+            }
         }
+        self.launchAtLogin = (SMAppService.mainApp.status == .enabled)
 
         if let rawLang = defaults.string(forKey: "appLanguage"),
            let lang = AppLanguage(rawValue: rawLang) {
@@ -298,12 +302,6 @@ public final class AppSettings: ObservableObject {
             self.dayNotes = decoded
         } else {
             self.dayNotes = [:]
-        }
-
-        // init içinde didSet çalışmadığından varsayılan açık ayar burada kaydedilir ve uygulanır
-        if applyLoginDefault {
-            defaults.set(true, forKey: "launchAtLogin")
-            updateLaunchAtLoginRegistration()
         }
     }
 
@@ -426,20 +424,33 @@ public final class AppSettings: ObservableObject {
     }
 
     public func updateLaunchAtLoginRegistration() {
-        if #available(macOS 13.0, *) {
-            do {
-                if launchAtLogin {
-                    if SMAppService.mainApp.status != .enabled {
-                        try SMAppService.mainApp.register()
-                    }
-                } else {
-                    if SMAppService.mainApp.status == .enabled {
-                        try SMAppService.mainApp.unregister()
-                    }
+        UserDefaults.standard.set(launchAtLogin, forKey: "launchAtLogin")
+        do {
+            if launchAtLogin {
+                if SMAppService.mainApp.status != .enabled {
+                    try SMAppService.mainApp.register()
                 }
-            } catch {
-                // Paket dışından veya izin kısıtlı ortamdan çalıştırıldığında sessizce geç
+            } else {
+                if SMAppService.mainApp.status == .enabled {
+                    try SMAppService.mainApp.unregister()
+                }
             }
+        } catch {
+            // Paket dışından veya izin kısıtlı ortamdan çalıştırıldığında kayıt yapılamaz; kutu gerçek durumu gösterir
         }
+        // Kullanıcı Sistem Ayarları'nda MacCalendar'ı kapattıysa onay oradan verilmelidir
+        if launchAtLogin && SMAppService.mainApp.status == .requiresApproval {
+            SMAppService.openSystemSettingsLoginItems()
+        }
+        refreshLaunchAtLoginStatus()
+    }
+
+    /// Onay kutusunu macOS'taki gerçek kayıtla eşitler (örn. Sistem Ayarları'nda yapılan değişiklikten sonra).
+    public func refreshLaunchAtLoginStatus() {
+        let enabled = SMAppService.mainApp.status == .enabled
+        guard launchAtLogin != enabled else { return }
+        isSyncingLaunchAtLogin = true
+        launchAtLogin = enabled
+        isSyncingLaunchAtLogin = false
     }
 }

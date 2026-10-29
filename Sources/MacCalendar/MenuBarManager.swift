@@ -149,6 +149,7 @@ public final class MenuBarManager: NSObject, NSWindowDelegate {
     }
 
     public func showFlyout() {
+        settings.refreshLaunchAtLoginStatus()
         // Açılış anında menü çubuğu öğesinin gerçek sağ kenarını yakala
         if let btnFrame = statusItem.button?.window?.frame, btnFrame.origin.x > 50 {
             lockedRightEdgeX = btnFrame.maxX
