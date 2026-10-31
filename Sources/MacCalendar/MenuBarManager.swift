@@ -19,6 +19,9 @@ public final class MenuBarManager: NSObject, NSWindowDelegate {
     public private(set) var panel: FlyoutPanel!
     public private(set) var hostingView: NSHostingView<CalendarFlyoutView>!
     private var timer: Timer?
+    private var scheduledWithSeconds = false
+    /// Son çizilen menü çubuğu metni; değişmediyse başlık yeniden kurulmaz
+    private var lastStatusTitle: String?
     private var cancellables = Set<AnyCancellable>()
     private let settings = AppSettings.shared
 
@@ -121,6 +124,9 @@ public final class MenuBarManager: NSObject, NSWindowDelegate {
                 DispatchQueue.main.async {
                     guard let self = self else { return }
                     self.updateStatusBarTitle()
+                    if self.scheduledWithSeconds != self.settings.showSecondsInMenuBar {
+                        self.scheduleNextClockTick()
+                    }
                     if self.panel.isVisible {
                         self.repositionPanel()
                     }
@@ -130,14 +136,39 @@ public final class MenuBarManager: NSObject, NSWindowDelegate {
     }
 
     private func startClockTimer() {
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+        scheduleNextClockTick()
+        // Uykudan uyanınca ya da saat/saat dilimi değişince menü çubuğu hemen güncellenir ve zamanlama yeniden kurulur
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self, selector: #selector(resyncClock), name: NSWorkspace.didWakeNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(resyncClock), name: .NSSystemClockDidChange, object: nil)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(resyncClock), name: .NSSystemTimeZoneDidChange, object: nil)
+    }
+
+    @objc private func resyncClock() {
+        NSTimeZone.resetSystemTimeZone()
+        updateStatusBarTitle()
+        scheduleNextClockTick()
+    }
+
+    /// Menü çubuğu yalnızca gösterilen metnin değişebileceği anda güncellenir: saniyeler açıksa her saniye başında,
+    /// kapalıysa her dakika başında. (Saat dilimi farkları 15 dakikanın katı olduğundan dakika sınırı her yerde aynıdır.)
+    private func scheduleNextClockTick() {
+        timer?.invalidate()
+        scheduledWithSeconds = settings.showSecondsInMenuBar
+        let step: TimeInterval = scheduledWithSeconds ? 1 : 60
+        let nowRef = Date().timeIntervalSinceReferenceDate
+        let fireDate = Date(timeIntervalSinceReferenceDate: (floor(nowRef / step) + 1) * step + 0.01)
+        let t = Timer(fire: fireDate, interval: 0, repeats: false) { [weak self] _ in
             Task { @MainActor in
                 self?.updateStatusBarTitle()
+                self?.scheduleNextClockTick()
             }
         }
-        if let timer {
-            RunLoop.main.add(timer, forMode: .common)
-        }
+        t.tolerance = settings.showSecondsInMenuBar ? 0.05 : 0.5
+        RunLoop.main.add(t, forMode: .common)
+        timer = t
     }
 
     @objc public func toggleFlyout(_ sender: AnyObject?) {
@@ -149,6 +180,7 @@ public final class MenuBarManager: NSObject, NSWindowDelegate {
     }
 
     public func showFlyout() {
+        FlyoutClock.shared.start()
         settings.refreshLaunchAtLoginStatus()
         // Açılış anında menü çubuğu öğesinin gerçek sağ kenarını yakala
         if let btnFrame = statusItem.button?.window?.frame, btnFrame.origin.x > 50 {
@@ -190,6 +222,7 @@ public final class MenuBarManager: NSObject, NSWindowDelegate {
 
     public func closeFlyout() {
         panel.orderOut(nil)
+        FlyoutClock.shared.stop()
         NotificationCenter.default.post(name: .flyoutDidClose, object: nil)
         if let monitor = globalClickMonitor {
             NSEvent.removeMonitor(monitor)
@@ -393,8 +426,11 @@ public final class MenuBarManager: NSObject, NSWindowDelegate {
             }
         }
 
-        button.image = menuBarCalendarIcon(for: now)
-        button.imagePosition = .imageLeading
+        let icon = menuBarCalendarIcon(for: now)
+        if button.image !== icon {
+            button.image = icon
+            button.imagePosition = .imageLeading
+        }
 
         var segments: [String] = []
         if !dateStr.isEmpty {
@@ -406,6 +442,8 @@ public final class MenuBarManager: NSObject, NSWindowDelegate {
         if let sec = secondClockPart {
             fullText += "\(separatorBeforeSecondClock)\(sec)"
         }
+        guard fullText != lastStatusTitle else { return }
+        lastStatusTitle = fullText
 
         let textFont = NSFont.monospacedDigitSystemFont(ofSize: 12.5, weight: .medium)
         let flagFont = NSFont.systemFont(ofSize: 16.5)
@@ -435,27 +473,33 @@ public final class MenuBarManager: NSObject, NSWindowDelegate {
         button.attributedTitle = attrString
     }
 
-    private func formatTime(_ date: Date, timeZone: TimeZone, showSeconds: Bool) -> String {
+    /// DateFormatter oluşturmak pahalıdır; saniyeli gösterimde her saniye yenisi kurulmasın diye önbelleğe alınır
+    private var formatterCache: [String: DateFormatter] = [:]
+
+    private func formatter(_ format: String, timeZone: TimeZone) -> DateFormatter {
+        let locale = settings.effectiveLocale
+        let key = "\(locale.identifier)|\(timeZone.identifier)|\(format)"
+        if let cached = formatterCache[key] { return cached }
         let f = DateFormatter()
-        f.locale = settings.effectiveLocale
+        f.locale = locale
         f.timeZone = timeZone
-        f.dateFormat = showSeconds ? "HH:mm:ss" : "HH:mm"
-        return f.string(from: date)
+        f.dateFormat = format
+        formatterCache[key] = f
+        return f
+    }
+
+    private func formatTime(_ date: Date, timeZone: TimeZone, showSeconds: Bool) -> String {
+        formatter(showSeconds ? "HH:mm:ss" : "HH:mm", timeZone: timeZone).string(from: date)
     }
 
     private func formatDate(_ date: Date, style: MenuBarDateFormat) -> String {
-        let f = DateFormatter()
-        f.locale = settings.effectiveLocale
         switch style {
         case .dayMonthWeekday:
-            f.dateFormat = "d MMM EEE"
-            return f.string(from: date)
+            return formatter("d MMM EEE", timeZone: .current).string(from: date)
         case .numeric:
-            f.dateFormat = "dd.MM.yyyy"
-            return f.string(from: date)
+            return formatter("dd.MM.yyyy", timeZone: .current).string(from: date)
         case .dayMonth:
-            f.dateFormat = "d MMMM"
-            return f.string(from: date)
+            return formatter("d MMMM", timeZone: .current).string(from: date)
         case .hidden:
             return ""
         }

@@ -8,11 +8,38 @@ private struct FlyoutHeightPreferenceKey: PreferenceKey {
     }
 }
 
+/// Açılır penceredeki canlı saat. Yalnızca pencere görünürken (MenuBarManager start/stop çağırır) saniye başında
+/// ilerler; gizli pencere her saniye yeniden çizilip boşta işlemci harcamaz.
+@MainActor
+public final class FlyoutClock: ObservableObject {
+    public static let shared = FlyoutClock()
+    @Published public private(set) var now = Date()
+    private var timer: Timer?
+
+    public func start() {
+        now = Date()
+        guard timer == nil else { return }
+        let nextSecond = Date(timeIntervalSinceReferenceDate: floor(now.timeIntervalSinceReferenceDate) + 1)
+        let t = Timer(fire: nextSecond, interval: 1.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.now = Date() }
+        }
+        t.tolerance = 0.05
+        RunLoop.main.add(t, forMode: .common)
+        timer = t
+    }
+
+    public func stop() {
+        timer?.invalidate()
+        timer = nil
+    }
+}
+
 public struct CalendarFlyoutView: View {
     @ObservedObject var settings: AppSettings
+    @ObservedObject private var clock = FlyoutClock.shared
     var onHeightChange: ((CGFloat) -> Void)?
 
-    @State private var now: Date = Date()
+    private var now: Date { clock.now }
     @State private var displayedMonth: Date = Date()
     @State private var selectedDate: Date = Date()
     @State private var isPickingMonthYear: Bool = false
@@ -23,8 +50,6 @@ public struct CalendarFlyoutView: View {
     @State private var showCustomCitySearch: Bool = false
     @State private var citySearchQuery: String = ""
     @State private var newNoteText: String = ""
-
-    private let timer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
 
     // Cumartesi ve Pazar için belirgin hafta sonu rengi (Mercan Kırmızısı / Turuncu-Kırmızı)
     private let weekendColor = Color(red: 0.93, green: 0.30, blue: 0.28)
@@ -149,9 +174,6 @@ public struct CalendarFlyoutView: View {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .strokeBorder(Color.primary.opacity(0.14), lineWidth: 1)
         )
-        .onReceive(timer) { current in
-            self.now = current
-        }
         .onReceive(NotificationCenter.default.publisher(for: .flyoutDidClose)) { _ in
             showSettingsPanel = false
             showAboutPanel = false
@@ -711,7 +733,7 @@ public struct CalendarFlyoutView: View {
                 Spacer()
                 Picker("", selection: $settings.menuBarClockBadgeStyle) {
                     ForEach(MenuBarClockBadgeStyle.allCases) { style in
-                        Text(style.title).tag(style)
+                        Text(settings.badgeStylePreview(style)).tag(style)
                     }
                 }
                 .labelsHidden()

@@ -109,7 +109,7 @@ Kurulum paketi istemiyor musunuz? Her sürümde bir `MacCalendar-<sürüm>.zip` 
 Paketi sürüm notlarındaki SHA-256 değeriyle karşılaştırın:
 
 ```bash
-shasum -a 256 ~/Downloads/MacCalendar-1.1.3.pkg
+shasum -a 256 ~/Downloads/MacCalendar-1.1.4.pkg
 ```
 
 ## Kaynak koddan derleme

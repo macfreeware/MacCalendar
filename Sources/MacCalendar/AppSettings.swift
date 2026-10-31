@@ -42,13 +42,15 @@ public enum MenuBarClockBadgeStyle: String, CaseIterable, Identifiable {
     case flagAndCode = "flag_and_code"     // 29 Eki Per  🇹🇷 18:45   🇯🇵 TYO 00:45
 
     public var id: String { rawValue }
-    public var title: String {
+
+    /// Ayarlardaki seçim listesi için örnek; yerel ve ikinci şehrin gerçek bayrağı, kodu ve saat farkıyla gösterilir.
+    public func preview(localFlag: String, localTime: String, secondFlag: String, secondTime: String, secondCode: String) -> String {
         switch self {
-        case .bothFlags: return "🇹🇷 18:45   🇯🇵 00:45"
-        case .timeThenFlag: return "18:45 🇹🇷   00:45 🇯🇵"
-        case .flagsInMiddle: return "18:45 🇹🇷 🇯🇵 00:45"
-        case .secondFlagOnly: return "18:45   🇯🇵 00:45"
-        case .flagAndCode: return "🇹🇷 18:45   🇯🇵 TYO 00:45"
+        case .bothFlags: return "\(localFlag) \(localTime)   \(secondFlag) \(secondTime)"
+        case .timeThenFlag: return "\(localTime) \(localFlag)   \(secondTime) \(secondFlag)"
+        case .flagsInMiddle: return "\(localTime) \(localFlag) \(secondFlag) \(secondTime)"
+        case .secondFlagOnly: return "\(localTime)   \(secondFlag) \(secondTime)"
+        case .flagAndCode: return "\(localFlag) \(localTime)   \(secondFlag) \(secondCode) \(secondTime)"
         }
     }
 }
@@ -349,6 +351,20 @@ public final class AppSettings: ObservableObject {
             return [custom] + Self.presets
         }
         return Self.presets
+    }
+
+    /// Bayrak stili listesindeki örnek: yerel saat 18:45, ikinci saat seçili şehrin bugünkü farkına göre.
+    public func badgeStylePreview(_ style: MenuBarClockBadgeStyle) -> String {
+        let f = DateFormatter()
+        f.dateFormat = "HH:mm"
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = .current
+        let sample = cal.date(bySettingHour: 18, minute: 45, second: 0, of: Date()) ?? Date()
+        let localTime = f.string(from: sample)
+        f.timeZone = secondTimeZone
+        return style.preview(localFlag: localFlag, localTime: localTime,
+                             secondFlag: secondClockFlag, secondTime: f.string(from: sample),
+                             secondCode: secondClockShortLabel)
     }
 
     public var secondClockShortLabel: String {

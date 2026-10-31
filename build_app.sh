@@ -5,7 +5,7 @@ set -e
 cd "$(dirname "$0")"
 
 APP_NAME="MacCalendar"
-VERSION="1.1.3"
+VERSION="1.1.4"
 BUNDLE_DIR="${APP_NAME}.app"
 CONTENTS_DIR="${BUNDLE_DIR}/Contents"
 MACOS_DIR="${CONTENTS_DIR}/MacOS"
