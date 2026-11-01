@@ -5,8 +5,12 @@
 <h1 align="center">MacCalendar</h1>
 
 <p align="center">
-  macOS için ülke bayraklı <b>çift dünya saati</b> gösteren (<code>🇹🇷 20:04   🇯🇵 02:04</code>), yerel bir <b>menü çubuğu takvimi</b>.<br>
+  macOS için ülke bayraklı <b>çift dünya saati</b> gösteren (<code>🇹🇷 20:04   🇯🇵 02:04</code>), ücretsiz ve açık kaynak bir <b>menü çubuğu takvimi</b>.<br>
   Swift, AppKit ve SwiftUI ile yazılmıştır; Electron ya da üçüncü taraf kütüphane gerektirmez.
+</p>
+
+<p align="center">
+  <b>Itsycal</b>, <b>Dato</b> ve <b>Clocker</b>'a ücretsiz bir alternatif: menü çubuğunda aylık takvim ve ikinci bir saat dilimi.
 </p>
 
 <p align="center">
@@ -18,7 +22,7 @@
 </p>
 
 <p align="center">
-  <a href="https://gitlab.com/freeware2/maccalendar/-/releases">Tüm sürümler</a> · <a href="#kurulum">Kurulum adımları</a> · Arayüz Türkçe ve İngilizcedir
+  <a href="https://gitlab.com/freeware2/maccalendar/-/releases">Tüm sürümler</a> · <a href="#i̇ndirme-ve-kurulum">Kurulum adımları</a> · Arayüz Türkçe ve İngilizcedir
 </p>
 
 > [!warning] Kurulum paketini ilk açtığınızda macOS onu engeller. Bu beklenen bir durumdur.
@@ -121,6 +125,34 @@ Xcode komut satırı araçları gerekir (macOS 13 veya üstü).
 ./build_app.sh --zip    # ayrıca build/release/MacCalendar-<sürüm>.zip ve SHA-256
 scripts/build_pkg.sh    # kurulum paketi: build/release/MacCalendar-<sürüm>.pkg ve SHA-256
 ```
+
+## Sık sorulan sorular
+
+### MacCalendar ücretsiz mi?
+
+Evet. MacCalendar, GPL-3.0 lisansıyla ücretsiz ve açık kaynaktır; reklam, hesap ya da uygulama içi satın alma yoktur.
+
+### Mac'te menü çubuğunda takvimi nasıl gösteririm?
+
+macOS'un menü çubuğu saatinde aylık görünüm yoktur. MacCalendar'ı kurup menü çubuğundaki tarihe tıklayın: bugünün vurgulandığı aylık takvim, **Bugün** düğmesi ve her gün için hızlı notlar açılır.
+
+### Mac menü çubuğuna ikinci bir saat dilimi ya da dünya saati nasıl eklenir?
+
+MacCalendar'ın Ayarlar'ında çift saati açıp 400'den fazla şehirden birini seçin. Menü çubuğu iki saati ülke bayraklarıyla gösterir, örneğin `🇹🇷 20:04   🇯🇵 02:04`; takvim de saat farkını gösterir.
+
+### Apple Takvim etkinliklerimi gösterir mi?
+
+Hayır. MacCalendar aylık takvimi ve her gün için kendi hızlı notlarını gösterir; Takvim uygulamasındaki etkinlikleri okumaz.
+
+### Hangi Mac'lerde çalışır?
+
+macOS 13 Ventura veya üstü yüklü Apple Silicon ve Intel Mac'lerde.
+
+### macOS neden ilk seferde engelliyor?
+
+MacCalendar, ücretli geliştirici hesabı gerektiren Apple onayından (notarization) geçmemiştir. **Sistem Ayarları ▸ Gizlilik ve Güvenlik ▸ Yine de Aç** ile bir kez izin verin; ayrıntılar [İlk açılış](#i̇lk-açılış-kurulum-paketine-bir-kez-izin-verin) bölümünde.
+
+<sub>Itsycal, Dato ve Clocker yalnızca karşılaştırma için anılmıştır; MacCalendar'ın bunlarla bir bağı yoktur.</sub>
 
 ## Lisans
 

@@ -5,8 +5,12 @@
 <h1 align="center">MacCalendar</h1>
 
 <p align="center">
-  A native <b>menu bar calendar</b> for macOS with a <b>dual world clock</b> and country flags (<code>🇹🇷 20:04   🇯🇵 02:04</code>).<br>
+  A free, open-source <b>menu bar calendar</b> for macOS with a <b>dual world clock</b> and country flags (<code>🇹🇷 20:04   🇯🇵 02:04</code>).<br>
   Written in Swift with AppKit and SwiftUI; no Electron and no third-party libraries.
+</p>
+
+<p align="center">
+  A free alternative to <b>Itsycal</b>, <b>Dato</b> and <b>Clocker</b>: a month calendar and a second time zone right in the menu bar.
 </p>
 
 <p align="center">
@@ -120,6 +124,34 @@ Requires the Xcode command line tools (macOS 13 or later).
 ./build_app.sh --zip    # also build/release/MacCalendar-<version>.zip and its SHA-256
 scripts/build_pkg.sh    # installer: build/release/MacCalendar-<version>.pkg and its SHA-256
 ```
+
+## FAQ
+
+### Is MacCalendar free?
+
+Yes. MacCalendar is free and open source under the GPL-3.0 license, with no ads, no accounts and no in-app purchases.
+
+### How do I show a calendar in the Mac menu bar?
+
+The macOS menu bar clock has no month view. Install MacCalendar and click the date in the menu bar: a month calendar opens with today highlighted, a **Today** button and quick notes for any day.
+
+### How do I add a second time zone or world clock to the Mac menu bar?
+
+Turn on the dual clock in MacCalendar's Settings and pick any of more than 400 cities. The menu bar then shows both times with country flags, for example `🇹🇷 20:04   🇯🇵 02:04`, and the calendar shows the time difference.
+
+### Does it show my Apple Calendar events?
+
+No. MacCalendar shows the month grid and its own quick notes for each day; it does not read events from the Calendar app.
+
+### Which Macs does it run on?
+
+Apple Silicon and Intel Macs with macOS 13 Ventura or later.
+
+### Why does macOS block it the first time?
+
+MacCalendar is not notarized by Apple, which needs a paid developer account. Allow it once in **System Settings ▸ Privacy & Security ▸ Open Anyway**; see [First launch](#first-launch-allow-the-installer-once).
+
+<sub>Itsycal, Dato and Clocker are named only for comparison; MacCalendar is not affiliated with them.</sub>
 
 ## License
 
