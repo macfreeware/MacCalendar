@@ -89,7 +89,7 @@ Paket Apple Silicon ve Intel Mac'lerde çalışır; macOS 13 veya üstü gerekir
 3. Kurulum adımlarını tamamlayın. MacCalendar **Uygulamalar** klasörüne kurulur, kendiliğinden açılır ve simgesi menü çubuğunda, sistem saatinin yanında belirir.
 4. Bundan sonra MacCalendar Mac her açıldığında kendiliğinden başlar. Bunu Ayarlar'dan (*Mac Açıldığında Otomatik Başlat*) kapatabilirsiniz.
 
-Kurulum paketi istemiyor musunuz? Her sürümde bir `MacCalendar-<sürüm>.zip` de var: açın ve `MacCalendar.app`'i **Uygulamalar** klasörüne sürükleyin.
+Kurulum paketi istemiyor musunuz? Her sürümde bir `MacCalendar.zip` de var: açın ve `MacCalendar.app`'i **Uygulamalar** klasörüne sürükleyin.
 
 ### İlk açılış: kurulum paketine bir kez izin verin
 
@@ -113,7 +113,7 @@ Kurulum paketi istemiyor musunuz? Her sürümde bir `MacCalendar-<sürüm>.zip` 
 Paketi sürüm notlarındaki SHA-256 değeriyle karşılaştırın:
 
 ```bash
-shasum -a 256 ~/Downloads/MacCalendar-1.1.4.pkg
+shasum -a 256 ~/Downloads/MacCalendar-1.2.0.pkg
 ```
 
 ## Kaynak koddan derleme
@@ -122,7 +122,7 @@ Xcode komut satırı araçları gerekir (macOS 13 veya üstü).
 
 ```bash
 ./build_app.sh          # MacCalendar.app'i derler (universal: arm64 + x86_64)
-./build_app.sh --zip    # ayrıca build/release/MacCalendar-<sürüm>.zip ve SHA-256
+./build_app.sh --zip    # ayrıca build/release/MacCalendar.zip ve SHA-256
 scripts/build_pkg.sh    # kurulum paketi: build/release/MacCalendar-<sürüm>.pkg ve SHA-256
 ```
 
@@ -147,6 +147,12 @@ Hayır. MacCalendar aylık takvimi ve her gün için kendi hızlı notlarını g
 ### Hangi Mac'lerde çalışır?
 
 macOS 13 Ventura veya üstü yüklü Apple Silicon ve Intel Mac'lerde.
+
+### Nasıl güncellenir, internete bağlanır mı?
+
+MacCalendar 1.2.0'dan itibaren kendini günceller. Günde bir kez GitLab'a son sürümü sorar; bu istekle sizinle ya da notlarınızla ilgili hiçbir şey gönderilmez ve uygulamanın yaptığı tek internet bağlantısı budur. Yeni sürüm varsa önce sorar: **Şimdi Güncelle**, **Sonra** ya da **Bu Sürümü Atla**. İndirilen dosya, uygulamanın yerine geçmeden önce doğrulanır (SHA-256, uygulama kimliği, sürüm ve imza). Günlük denetimi Ayarlar'dan (*Güncellemeleri Otomatik Denetle*) kapatabilir, Hakkında'daki **Güncellemeleri Denetle…** düğmesiyle elle bakabilirsiniz.
+
+Kurulum paketi uygulamayı, Uygulamalar'a sürüklenmiş gibi kurulumu yapan kullanıcıya devreder; aksi halde uygulama kendini güncelleyemezdi. Birden çok kullanıcılı Mac'te başka kullanıcıya ait kopya, güncelleme yerine indirme sayfasını açar.
 
 ### macOS neden ilk seferde engelliyor?
 

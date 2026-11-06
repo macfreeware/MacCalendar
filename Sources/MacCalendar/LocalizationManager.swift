@@ -91,6 +91,30 @@ public struct L10n {
         case sameTime
         case hoursDiff(String)
         case todayWithDash
+        case checkForUpdates
+        case checkingForUpdates
+        case updateUpToDate
+        case autoCheckUpdates
+        case updateNow
+        case updateLater
+        case updateSkipVersion
+        case openDownloadPage
+        case updateInstallingTitle
+        case updateFailedTitle
+        case updateFailedDetail
+        case updateErrorNotFound
+        case updateErrorMissingFiles
+        case updateErrorChecksumFile
+        case updateErrorChecksum
+        case updateErrorUnzip
+        case updateErrorWrongApp
+        case updateErrorSignature
+        case updateAvailableTitle(String)
+        case updateAvailableDetail(String)
+        case updateManualDetail(String)
+        case updateInstallingDetail(String)
+        case updateErrorHTTP(Int)
+        case updateErrorNotWritable(String)
 
         var tr: String {
             switch self {
@@ -139,6 +163,30 @@ public struct L10n {
             case .sameTime: return "Aynı saat"
             case .hoursDiff(let diff): return "\(diff) sa"
             case .todayWithDash: return "Bugün • "
+            case .checkForUpdates: return "Güncellemeleri Denetle…"
+            case .checkingForUpdates: return "Denetleniyor…"
+            case .updateUpToDate: return "MacCalendar güncel."
+            case .autoCheckUpdates: return "Güncellemeleri Otomatik Denetle"
+            case .updateNow: return "Şimdi Güncelle"
+            case .updateLater: return "Sonra"
+            case .updateSkipVersion: return "Bu Sürümü Atla"
+            case .openDownloadPage: return "İndirme Sayfasını Aç"
+            case .updateInstallingTitle: return "MacCalendar güncelleniyor"
+            case .updateFailedTitle: return "Güncelleme kurulamadı."
+            case .updateFailedDetail: return "İsterseniz yeni sürümü indirme sayfasından elle kurabilirsiniz."
+            case .updateErrorNotFound: return "Sürüm bilgisine ulaşılamadı."
+            case .updateErrorMissingFiles: return "Sürümde güncelleme dosyaları yok."
+            case .updateErrorChecksumFile: return "Özet dosyası okunamadı."
+            case .updateErrorChecksum: return "İndirilen dosyanın özeti tutmuyor; dosya bozuk ya da değiştirilmiş olabilir."
+            case .updateErrorUnzip: return "Arşiv açılamadı."
+            case .updateErrorWrongApp: return "Arşivdeki uygulama beklenen MacCalendar sürümü değil."
+            case .updateErrorSignature: return "Uygulamanın imzası doğrulanamadı."
+            case .updateAvailableTitle(let version): return "MacCalendar \(version) hazır"
+            case .updateAvailableDetail(let current): return "Kullandığınız sürüm: \(current). Güncelleme indirilir, doğrulanır ve MacCalendar yeniden başlatılır."
+            case .updateManualDetail(let current): return "Kullandığınız sürüm: \(current). Bu kopya kendini güncelleyemiyor (başka kullanıcıya ait); yeni sürümü indirme sayfasından kurabilirsiniz."
+            case .updateInstallingDetail(let version): return "Sürüm \(version) indiriliyor ve doğrulanıyor…"
+            case .updateErrorHTTP(let code): return "GitLab yanıtı: HTTP \(code)"
+            case .updateErrorNotWritable(let folder): return "“\(folder)” klasörüne yazılamadı."
             }
         }
 
@@ -189,6 +237,30 @@ public struct L10n {
             case .sameTime: return "Same time"
             case .hoursDiff(let diff): return "\(diff) hrs"
             case .todayWithDash: return "Today • "
+            case .checkForUpdates: return "Check for Updates…"
+            case .checkingForUpdates: return "Checking…"
+            case .updateUpToDate: return "MacCalendar is up to date."
+            case .autoCheckUpdates: return "Check for Updates Automatically"
+            case .updateNow: return "Update Now"
+            case .updateLater: return "Later"
+            case .updateSkipVersion: return "Skip This Version"
+            case .openDownloadPage: return "Open Download Page"
+            case .updateInstallingTitle: return "Updating MacCalendar"
+            case .updateFailedTitle: return "The update could not be installed."
+            case .updateFailedDetail: return "You can install the new version by hand from the download page."
+            case .updateErrorNotFound: return "The release information could not be reached."
+            case .updateErrorMissingFiles: return "The release has no update files."
+            case .updateErrorChecksumFile: return "The checksum file could not be read."
+            case .updateErrorChecksum: return "The download does not match its checksum; it may be damaged or altered."
+            case .updateErrorUnzip: return "The archive could not be opened."
+            case .updateErrorWrongApp: return "The archive does not contain the expected MacCalendar version."
+            case .updateErrorSignature: return "The app signature could not be verified."
+            case .updateAvailableTitle(let version): return "MacCalendar \(version) is available"
+            case .updateAvailableDetail(let current): return "You have version \(current). The update is downloaded, verified, and MacCalendar restarts."
+            case .updateManualDetail(let current): return "You have version \(current). This copy cannot update itself (it belongs to another user); install the new version from the download page."
+            case .updateInstallingDetail(let version): return "Downloading and verifying version \(version)…"
+            case .updateErrorHTTP(let code): return "GitLab answered: HTTP \(code)"
+            case .updateErrorNotWritable(let folder): return "Could not write to “\(folder)”."
             }
         }
     }

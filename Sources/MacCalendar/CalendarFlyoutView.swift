@@ -49,6 +49,8 @@ public struct CalendarFlyoutView: View {
     @State private var canConfirmQuit: Bool = false
     @State private var showCustomCitySearch: Bool = false
     @State private var citySearchQuery: String = ""
+    @State private var isCheckingForUpdates: Bool = false
+    @State private var updateStatus: String?
     @State private var newNoteText: String = ""
 
     // Cumartesi ve Pazar için belirgin hafta sonu rengi (Mercan Kırmızısı / Turuncu-Kırmızı)
@@ -182,6 +184,7 @@ public struct CalendarFlyoutView: View {
             showCustomCitySearch = false
             isPickingMonthYear = false
             citySearchQuery = ""
+            updateStatus = nil
         }
     }
 
@@ -769,6 +772,10 @@ public struct CalendarFlyoutView: View {
             Toggle(settings.tr(.launchAtLogin), isOn: $settings.launchAtLogin)
                 .font(.system(size: 12))
                 .toggleStyle(.checkbox)
+
+            Toggle(settings.tr(.autoCheckUpdates), isOn: $settings.autoCheckUpdates)
+                .font(.system(size: 12))
+                .toggleStyle(.checkbox)
         }
     }
 
@@ -813,6 +820,21 @@ public struct CalendarFlyoutView: View {
                 Spacer()
             }
 
+            VStack(alignment: .leading, spacing: 4) {
+                Button(settings.tr(isCheckingForUpdates ? .checkingForUpdates : .checkForUpdates)) {
+                    checkForUpdates()
+                }
+                .controlSize(.small)
+                .disabled(isCheckingForUpdates)
+
+                if let updateStatus {
+                    Text(updateStatus)
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
             Text(settings.tr(.aboutDescription))
                 .font(.system(size: 11))
                 .foregroundColor(.secondary)
@@ -853,6 +875,21 @@ public struct CalendarFlyoutView: View {
                         .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
                 )
         )
+    }
+
+    /// Güncelse ya da hata varsa sonuç burada yazar; yeni sürüm varsa pencere kapanır ve güncelleme sorusu açılır.
+    private func checkForUpdates() {
+        isCheckingForUpdates = true
+        updateStatus = nil
+        Task {
+            let outcome = await Updater.checkNow()
+            isCheckingForUpdates = false
+            switch outcome {
+            case .upToDate: updateStatus = settings.tr(.updateUpToDate)
+            case .failed(let message): updateStatus = message
+            case .newer(let release): Updater.offer(release)
+            }
+        }
     }
 
     private func triggerQuitConfirmation() {

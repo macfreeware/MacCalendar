@@ -1,12 +1,19 @@
 #!/bin/zsh
 # MacCalendar.app'i derler (Apple Silicon + Intel, universal).
-#   --zip  ayrıca build/release/MacCalendar-<sürüm>.zip ve SHA-256 değerini üretir
+#   --zip    ayrıca build/release/MacCalendar.zip ve MacCalendar.zip.sha256 üretir (güncelleyici bu sabit adları arar)
+#   --debug  deneme derlemesi: build/debug/MacCalendar.app (MACCALENDAR_UPDATE_URL ve --update-headless yalnızca burada)
 set -e
 cd "$(dirname "$0")"
 
 APP_NAME="MacCalendar"
-VERSION="1.1.4"
+VERSION="1.2.0"
+SWIFT_FLAGS=(-O)
 BUNDLE_DIR="${APP_NAME}.app"
+if [[ "${1:-}" == "--debug" ]]; then
+    SWIFT_FLAGS=(-Onone -D DEBUG)
+    mkdir -p build/debug
+    BUNDLE_DIR="build/debug/${APP_NAME}.app"
+fi
 CONTENTS_DIR="${BUNDLE_DIR}/Contents"
 MACOS_DIR="${CONTENTS_DIR}/MacOS"
 RESOURCES_DIR="${CONTENTS_DIR}/Resources"
@@ -32,7 +39,7 @@ iconutil -c icns /tmp/AppIcon.iconset -o "${RESOURCES_DIR}/AppIcon.icns"
 echo "⚙️ Uygulama ikili dosyası derleniyor (arm64 + x86_64)..."
 for ARCH in arm64 x86_64; do
     swiftc \
-        -O \
+        "${SWIFT_FLAGS[@]}" \
         -module-cache-path "${MODULE_CACHE}" \
         -target ${ARCH}-apple-macosx13.0 \
         -framework AppKit \
@@ -43,6 +50,8 @@ for ARCH in arm64 x86_64; do
         Sources/MacCalendar/AppSettings.swift \
         Sources/MacCalendar/CalendarFlyoutView.swift \
         Sources/MacCalendar/MenuBarManager.swift \
+        Sources/MacCalendar/UpdateInfo.swift \
+        Sources/MacCalendar/Updater.swift \
         Sources/MacCalendar/MacCalendarApp.swift \
         -o "/tmp/${APP_NAME}-${ARCH}"
 done
@@ -87,10 +96,10 @@ touch "${BUNDLE_DIR}"
 echo "✅ ${BUNDLE_DIR} simgesiyle birlikte başarıyla hazırlandı!"
 
 if [[ "${1:-}" == "--zip" ]]; then
-    # Zip, uygulamayı ve GPL lisans metnini içeren bir klasör taşır.
+    # Zip, uygulamayı ve GPL lisans metnini içeren bir klasör taşır: MacCalendar/MacCalendar.app, MacCalendar/LICENSE.txt
     mkdir -p build/release
-    ZIP="build/release/${APP_NAME}-${VERSION}.zip"
-    STAGE="build/release/${APP_NAME}-${VERSION}"
+    ZIP="build/release/${APP_NAME}.zip"
+    STAGE="build/release/${APP_NAME}"
     rm -rf "${ZIP}" "${ZIP}.sha256" "${STAGE}"
     mkdir -p "${STAGE}"
     cp -R "${BUNDLE_DIR}" "${STAGE}/"

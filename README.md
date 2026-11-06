@@ -88,7 +88,7 @@ The package runs on Apple Silicon and Intel Macs; macOS 13 or later is required.
 3. Click through the installer. MacCalendar is installed in **Applications**, opens by itself and its icon appears in the menu bar, next to the system clock.
 4. From then on MacCalendar starts whenever you log in. You can turn this off in its Settings (*Launch Automatically at Login*).
 
-Prefer no installer? Each release also has a `MacCalendar-<version>.zip`: open it and drag `MacCalendar.app` to **Applications**.
+Prefer no installer? Each release also has a `MacCalendar.zip`: open it and drag `MacCalendar.app` to **Applications**.
 
 ### First launch: allow the installer once
 
@@ -112,7 +112,7 @@ Prefer no installer? Each release also has a `MacCalendar-<version>.zip`: open i
 Compare the package with the SHA-256 value in the release notes:
 
 ```bash
-shasum -a 256 ~/Downloads/MacCalendar-1.1.4.pkg
+shasum -a 256 ~/Downloads/MacCalendar-1.2.0.pkg
 ```
 
 ## Building from source
@@ -121,7 +121,7 @@ Requires the Xcode command line tools (macOS 13 or later).
 
 ```bash
 ./build_app.sh          # builds MacCalendar.app (universal: arm64 + x86_64)
-./build_app.sh --zip    # also build/release/MacCalendar-<version>.zip and its SHA-256
+./build_app.sh --zip    # also build/release/MacCalendar.zip and its SHA-256
 scripts/build_pkg.sh    # installer: build/release/MacCalendar-<version>.pkg and its SHA-256
 ```
 
@@ -146,6 +146,12 @@ No. MacCalendar shows the month grid and its own quick notes for each day; it do
 ### Which Macs does it run on?
 
 Apple Silicon and Intel Macs with macOS 13 Ventura or later.
+
+### How does it update, and does it connect to the internet?
+
+MacCalendar updates itself from 1.2.0 on. Once a day it asks GitLab for the latest version; that request sends nothing about you or your notes, and it is the only internet connection the app makes. If there is a new version, it asks first: **Update Now**, **Later** or **Skip This Version**. The download is checked (SHA-256, app identity, version and signature) before it replaces the app. Turn the daily check off in Settings (*Check for Updates Automatically*), or check by hand with **Check for Updates…** in About.
+
+The installer hands the app to the user who installed it, the same as dragging it to Applications; without that it could not update itself. On a Mac with several users, a copy that belongs to someone else opens the download page instead.
 
 ### Why does macOS block it the first time?
 

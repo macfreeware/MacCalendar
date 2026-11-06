@@ -5,7 +5,8 @@ import SwiftUI
 public final class AppDelegate: NSObject, NSApplicationDelegate {
     private var menuBarManager: MenuBarManager?
     private let instanceID = UUID().uuidString
-    private static let quitNotification = Notification.Name("com.rafetsapanci.MacCalendar.quitOldInstance")
+    // Bundle id'ye bağlı: ayrı kimlikli deneme kopyası gerçek uygulamayı kapatmaz
+    private static let quitNotification = Notification.Name("\(Bundle.main.bundleIdentifier ?? "MacCalendar").quitOldInstance")
 
     public func applicationDidFinishLaunching(_ notification: Notification) {
         DistributedNotificationCenter.default().postNotificationName(
@@ -32,6 +33,8 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
 
         if CommandLine.arguments.contains("--self-test") {
             runVisualAndGeometrySelfTest(manager: manager)
+        } else {
+            Updater.startAutomaticChecks()
         }
     }
 
@@ -158,6 +161,11 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
 @main
 public struct MacCalendarApp {
     public static func main() {
+        #if DEBUG
+        if CommandLine.arguments.contains("--update-headless") {
+            UpdateHeadless.run()
+        }
+        #endif
         let app = NSApplication.shared
         let delegate = AppDelegate()
         app.delegate = delegate

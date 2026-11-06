@@ -230,6 +230,10 @@ public final class AppSettings: ObservableObject {
     }
     private var isSyncingLaunchAtLogin = false
 
+    @Published public var autoCheckUpdates: Bool {
+        didSet { UserDefaults.standard.set(autoCheckUpdates, forKey: "autoCheckUpdates") }
+    }
+
     @Published public var appLanguage: AppLanguage {
         didSet {
             UserDefaults.standard.set(appLanguage.rawValue, forKey: "appLanguage")
@@ -291,6 +295,8 @@ public final class AppSettings: ObservableObject {
             }
         }
         self.launchAtLogin = (SMAppService.mainApp.status == .enabled)
+
+        self.autoCheckUpdates = defaults.object(forKey: "autoCheckUpdates") == nil || defaults.bool(forKey: "autoCheckUpdates")
 
         if let rawLang = defaults.string(forKey: "appLanguage"),
            let lang = AppLanguage(rawValue: rawLang) {
