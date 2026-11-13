@@ -50,10 +50,10 @@ Menü çubuğunda tarih ve iki saat, tıklayınca açılan takvim ve Ayarlar pan
 
 ### Menü çubuğu
 
-- **Gün simgesi:** o günün tarihini gösteren küçük takvim simgesi.
-- **Tarih ve saat biçimleri:** `30 Eki Cum`, `30.10.2026`, `30 Ekim` ya da yalnızca saat; isteğe bağlı saniye ve bayrak rozetleri.
+- **Tarih ve saat biçimleri:** `30 Eki Cum`, `30.10.2026`, `30 Ekim`, o günün numarasını gösteren küçük takvim simgesi ya da yalnızca saat; saniye isteğe bağlı.
 - **Çift saat (açılıp kapatılabilir):** yalnızca yerel saati (`🇹🇷 20:04`) ya da yanında ikinci bir şehrin saatini (`🇹🇷 20:04   🇯🇵 02:04`) gösterin.
-  Beş dizilim: bayrak saatten önce, saatten sonra, ortada, yalnızca ikinci bayrak ya da bayrak ve şehir kodu.
+  Yedi dizilim: bayrak saatten önce, saatten sonra, ortada, yalnızca ikinci bayrak, bayrak ve şehir kodu, bayraklar ve iki kod ya da bayraksız kodlar (`IST 20:04   TYO 02:04`).
+- **Yerel saat en sağda:** kendi saatinizi ikinci şehirden sonra, sağ üst köşede tutun (`🇯🇵 02:04   🇹🇷 20:04`).
 
 ### Takvim penceresi
 
@@ -113,7 +113,7 @@ Kurulum paketi istemiyor musunuz? Her sürümde bir `MacCalendar.zip` de var: a�
 Paketi sürüm notlarındaki SHA-256 değeriyle karşılaştırın:
 
 ```bash
-shasum -a 256 ~/Downloads/MacCalendar-1.2.0.pkg
+shasum -a 256 ~/Downloads/MacCalendar-1.3.0.pkg
 ```
 
 ## Kaynak koddan derleme

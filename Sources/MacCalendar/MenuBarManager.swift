@@ -383,67 +383,23 @@ public final class MenuBarManager: NSObject, NSWindowDelegate {
 
         let localTimeStr = formatTime(now, timeZone: .current, showSeconds: settings.showSecondsInMenuBar)
         let dateStr = formatDate(now, style: settings.menuBarDateFormat)
-        let localFlag = settings.localFlag
-        let secondFlag = settings.secondClockFlag
-        let customTrimmed = settings.secondClockCustomLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+        let secondTime = settings.showSecondClock
+            ? formatTime(now, timeZone: settings.secondTimeZone, showSeconds: settings.showSecondsInMenuBar)
+            : nil
+        let clocks = settings.clockLine(style: settings.menuBarClockBadgeStyle, localTime: localTimeStr, secondTime: secondTime)
 
-        let formattedLocalPart: String
-        switch settings.menuBarClockBadgeStyle {
-        case .bothFlags, .flagAndCode:
-            formattedLocalPart = "\(localFlag) \(localTimeStr)"
-        case .timeThenFlag, .flagsInMiddle:
-            formattedLocalPart = "\(localTimeStr) \(localFlag)"
-        case .secondFlagOnly:
-            formattedLocalPart = localTimeStr
-        }
-
-        var secondClockPart: String? = nil
-        var separatorBeforeSecondClock = "   "
-        if settings.showSecondClock {
-            let secTime = formatTime(now, timeZone: settings.secondTimeZone, showSeconds: settings.showSecondsInMenuBar)
-            switch settings.menuBarClockBadgeStyle {
-            case .bothFlags, .secondFlagOnly:
-                if !customTrimmed.isEmpty {
-                    secondClockPart = "\(secondFlag) \(customTrimmed) \(secTime)"
-                } else {
-                    secondClockPart = "\(secondFlag) \(secTime)"
-                }
-            case .timeThenFlag:
-                if !customTrimmed.isEmpty {
-                    secondClockPart = "\(customTrimmed) \(secTime) \(secondFlag)"
-                } else {
-                    secondClockPart = "\(secTime) \(secondFlag)"
-                }
-            case .flagsInMiddle:
-                separatorBeforeSecondClock = " "
-                if !customTrimmed.isEmpty {
-                    secondClockPart = "\(secondFlag) \(customTrimmed) \(secTime)"
-                } else {
-                    secondClockPart = "\(secondFlag) \(secTime)"
-                }
-            case .flagAndCode:
-                secondClockPart = "\(secondFlag) \(settings.secondClockShortLabel) \(secTime)"
-            }
-        }
-
-        let icon = menuBarCalendarIcon(for: now)
+        // Takvim simgesi yalnızca tarih yazısı yokken ("Gün Simgesi + Saat") gösterilir
+        let icon = settings.menuBarDateFormat.showsDayIcon ? menuBarCalendarIcon(for: now) : nil
         if button.image !== icon {
             button.image = icon
             button.imagePosition = .imageLeading
         }
 
-        var segments: [String] = []
-        if !dateStr.isEmpty {
-            segments.append(dateStr)
-        }
-        segments.append(formattedLocalPart)
-
-        var fullText = segments.joined(separator: "  ")
-        if let sec = secondClockPart {
-            fullText += "\(separatorBeforeSecondClock)\(sec)"
-        }
-        guard fullText != lastStatusTitle else { return }
-        lastStatusTitle = fullText
+        let fullText = dateStr.isEmpty ? clocks : dateStr + "  " + clocks
+        // Simgeyle yazı arasında boşluk; simge yoksa gerekmez
+        let fullString = (icon == nil ? "" : " ") + fullText
+        guard fullString != lastStatusTitle else { return }
+        lastStatusTitle = fullString
 
         let textFont = NSFont.monospacedDigitSystemFont(ofSize: 12.5, weight: .medium)
         let flagFont = NSFont.systemFont(ofSize: 16.5)
@@ -452,7 +408,6 @@ public final class MenuBarManager: NSObject, NSWindowDelegate {
             .foregroundColor: NSColor.labelColor
         ]
 
-        let fullString = " " + fullText
         let attrString = NSMutableAttributedString(string: fullString, attributes: baseAttrs)
 
         // Bayrak emojilerini daha büyük fontla ve dikey ortalanmış olarak biçimlendir
@@ -500,7 +455,7 @@ public final class MenuBarManager: NSObject, NSWindowDelegate {
             return formatter("dd.MM.yyyy", timeZone: .current).string(from: date)
         case .dayMonth:
             return formatter("d MMMM", timeZone: .current).string(from: date)
-        case .hidden:
+        case .hidden, .timeOnly:
             return ""
         }
     }

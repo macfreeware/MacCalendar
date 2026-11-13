@@ -14,9 +14,13 @@ public enum MenuBarDateFormat: String, CaseIterable, Identifiable {
     case dayMonthWeekday = "d_mmm_eee"
     case numeric = "dd_mm_yyyy"
     case dayMonth = "d_mmmm"
-    case hidden = "hidden"
+    case hidden = "hidden"        // gün simgesi + saat
+    case timeOnly = "time_only"   // yalnızca saat, simge de yok
 
     public var id: String { rawValue }
+
+    /// Takvim simgesi (içinde günün numarası) yalnızca tarih yazısı yokken gösterilir; tarih yazılıyken gereksizdir.
+    public var showsDayIcon: Bool { self == .hidden }
 
     public func title(lang: AppLanguage) -> String {
         let isTr = lang.resolvedIsTurkish
@@ -24,7 +28,8 @@ public enum MenuBarDateFormat: String, CaseIterable, Identifiable {
         case .dayMonthWeekday: return isTr ? "29 Eki Per" : "29 Oct Thu"
         case .numeric: return "29.10.2026"
         case .dayMonth: return isTr ? "29 Ekim" : "29 October"
-        case .hidden: return isTr ? "Sadece Saat" : "Time Only"
+        case .hidden: return isTr ? "Gün Simgesi + Saat" : "Day Icon + Time"
+        case .timeOnly: return isTr ? "Sadece Saat" : "Time Only"
         }
     }
 
@@ -35,24 +40,44 @@ public enum MenuBarDateFormat: String, CaseIterable, Identifiable {
 }
 
 public enum MenuBarClockBadgeStyle: String, CaseIterable, Identifiable {
-    case bothFlags = "both_flags"          // 29 Eki Per  🇹🇷 18:45   🇯🇵 00:45
-    case timeThenFlag = "time_then_flag"   // 29 Eki Per  18:45 🇹🇷   00:45 🇯🇵
-    case flagsInMiddle = "flags_middle"    // 29 Eki Per  18:45 🇹🇷 🇯🇵 00:45
-    case secondFlagOnly = "second_flag"    // 29 Eki Per  18:45   🇯🇵 00:45
-    case flagAndCode = "flag_and_code"     // 29 Eki Per  🇹🇷 18:45   🇯🇵 TYO 00:45
+    case bothFlags = "both_flags"          // 🇹🇷 18:45   🇯🇵 00:45
+    case timeThenFlag = "time_then_flag"   // 18:45 🇹🇷   00:45 🇯🇵
+    case flagsInMiddle = "flags_middle"    // 18:45 🇹🇷 🇯🇵 00:45
+    case secondFlagOnly = "second_flag"    // 18:45   🇯🇵 00:45
+    case flagAndCode = "flag_and_code"     // 🇹🇷 18:45   🇯🇵 TYO 00:45
+    case flagsAndCodes = "flags_and_codes" // 🇹🇷 IST 18:45   🇯🇵 TYO 00:45
+    case codesOnly = "codes_only"          // IST 18:45   TYO 00:45 (bayraksız)
 
     public var id: String { rawValue }
 
-    /// Ayarlardaki seçim listesi için örnek; yerel ve ikinci şehrin gerçek bayrağı, kodu ve saat farkıyla gösterilir.
-    public func preview(localFlag: String, localTime: String, secondFlag: String, secondTime: String, secondCode: String) -> String {
+    /// Bir saatin bayrağı gösterilir mi?
+    func showsFlag(isLocal: Bool) -> Bool {
         switch self {
-        case .bothFlags: return "\(localFlag) \(localTime)   \(secondFlag) \(secondTime)"
-        case .timeThenFlag: return "\(localTime) \(localFlag)   \(secondTime) \(secondFlag)"
-        case .flagsInMiddle: return "\(localTime) \(localFlag) \(secondFlag) \(secondTime)"
-        case .secondFlagOnly: return "\(localTime)   \(secondFlag) \(secondTime)"
-        case .flagAndCode: return "\(localFlag) \(localTime)   \(secondFlag) \(secondCode) \(secondTime)"
+        case .codesOnly: return false
+        case .secondFlagOnly: return !isLocal
+        default: return true
         }
     }
+
+    /// Bir saatin kodu (IST, TYO ya da özel etiket) gösterilir mi? Özel etiket bu stillerin dışında da ikinci saatte yazılır.
+    func showsCode(isLocal: Bool) -> Bool {
+        switch self {
+        case .flagsAndCodes, .codesOnly: return true
+        case .flagAndCode: return !isLocal
+        default: return false
+        }
+    }
+
+    /// Bayrak saatin arkasında mı? "Bayraklar ortada" stilinde soldaki saatin bayrağı arkada, sağdakinin önde olur.
+    func flagAfterTime(isFirst: Bool) -> Bool {
+        switch self {
+        case .timeThenFlag: return true
+        case .flagsInMiddle: return isFirst
+        default: return false
+        }
+    }
+
+    var separator: String { self == .flagsInMiddle ? " " : "   " }
 }
 
 @MainActor
@@ -217,6 +242,11 @@ public final class AppSettings: ObservableObject {
         didSet { UserDefaults.standard.set(showSecondsInMenuBar, forKey: "showSecondsInMenuBar") }
     }
 
+    /// Yerel saat menü çubuğunda en sağda (ikinci saatten sonra) durur; göz sağ üst köşede yerel saati bulur.
+    @Published public var localClockOnRight: Bool {
+        didSet { UserDefaults.standard.set(localClockOnRight, forKey: "localClockOnRight") }
+    }
+
     @Published public var startWeekOnMonday: Bool {
         didSet { UserDefaults.standard.set(startWeekOnMonday, forKey: "startWeekOnMonday") }
     }
@@ -274,6 +304,8 @@ public final class AppSettings: ObservableObject {
         }
 
         self.showSecondsInMenuBar = defaults.bool(forKey: "showSecondsInMenuBar")
+
+        self.localClockOnRight = defaults.bool(forKey: "localClockOnRight")
 
         if defaults.object(forKey: "startWeekOnMonday") == nil {
             self.startWeekOnMonday = true
@@ -368,9 +400,42 @@ public final class AppSettings: ObservableObject {
         let sample = cal.date(bySettingHour: 18, minute: 45, second: 0, of: Date()) ?? Date()
         let localTime = f.string(from: sample)
         f.timeZone = secondTimeZone
-        return style.preview(localFlag: localFlag, localTime: localTime,
-                             secondFlag: secondClockFlag, secondTime: f.string(from: sample),
-                             secondCode: secondClockShortLabel)
+        return clockLine(style: style, localTime: localTime, secondTime: f.string(from: sample))
+    }
+
+    /// Menü çubuğundaki saat yazısı (tarih hariç). Ayarlardaki örnekler de aynı kuralla üretilir.
+    /// `secondTime` nil ise ikinci saat kapalıdır.
+    public func clockLine(style: MenuBarClockBadgeStyle, localTime: String, secondTime: String?) -> String {
+        let customLabel = secondClockCustomLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+        func clock(isLocal: Bool, isFirst: Bool, time: String) -> String {
+            let code: String?
+            if style.showsCode(isLocal: isLocal) {
+                code = isLocal ? localClockShortLabel : secondClockShortLabel
+            } else {
+                code = (!isLocal && !customLabel.isEmpty) ? customLabel : nil
+            }
+            let core = [code, time].compactMap { $0 }.joined(separator: " ")
+            guard style.showsFlag(isLocal: isLocal) else { return core }
+            let flag = isLocal ? localFlag : secondClockFlag
+            return style.flagAfterTime(isFirst: isFirst) ? "\(core) \(flag)" : "\(flag) \(core)"
+        }
+        guard let secondTime else {
+            return clock(isLocal: true, isFirst: true, time: localTime)
+        }
+        let localFirst = !localClockOnRight
+        let local = clock(isLocal: true, isFirst: localFirst, time: localTime)
+        let second = clock(isLocal: false, isFirst: !localFirst, time: secondTime)
+        return localFirst ? local + style.separator + second : second + style.separator + local
+    }
+
+    /// Yerel saatin kısa kodu: hazır şehirlerden biriyse onun kodu (IST, TYO…), değilse şehir adının ilk üç harfi.
+    public var localClockShortLabel: String {
+        let id = TimeZone.current.identifier
+        if let preset = (Self.presets + Self.allSystemTimeZones).first(where: { $0.timeZoneID == id }) {
+            return preset.shortCode
+        }
+        let city = id.split(separator: "/").last.map(String.init) ?? id
+        return String(city.replacingOccurrences(of: "_", with: "").prefix(3)).uppercased()
     }
 
     public var secondClockShortLabel: String {

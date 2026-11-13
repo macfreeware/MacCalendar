@@ -50,10 +50,10 @@ The date and both clocks in the menu bar, the calendar that opens with a click, 
 
 ### Menu bar
 
-- **Day badge:** a small calendar icon with today's day number.
-- **Date and time formats:** `30 Oct Fri`, `30.10.2026`, `30 October` or time only, with optional seconds and flag badges.
+- **Date and time formats:** `30 Oct Fri`, `30.10.2026`, `30 October`, a small calendar icon with today's day number, or the time alone; seconds are optional.
 - **Dual clock (on or off):** show only the local time (`🇹🇷 20:04`) or the local time next to a second city (`🇹🇷 20:04   🇯🇵 02:04`).
-  Five layouts: flags before the time, after the time, in the middle, second flag only, or flag with a city code.
+  Seven layouts: flags before the time, after the time, in the middle, second flag only, flag with a city code, flags with both codes, or codes without flags (`IST 20:04   TYO 02:04`).
+- **Local time on the right:** keep your own time in the top-right corner, after the second city (`🇯🇵 02:04   🇹🇷 20:04`).
 
 ### Calendar flyout
 
@@ -112,7 +112,7 @@ Prefer no installer? Each release also has a `MacCalendar.zip`: open it and drag
 Compare the package with the SHA-256 value in the release notes:
 
 ```bash
-shasum -a 256 ~/Downloads/MacCalendar-1.2.0.pkg
+shasum -a 256 ~/Downloads/MacCalendar-1.3.0.pkg
 ```
 
 ## Building from source

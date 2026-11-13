@@ -743,6 +743,11 @@ public struct CalendarFlyoutView: View {
                 .frame(width: 210)
             }
 
+            Toggle(settings.tr(.localClockOnRight), isOn: $settings.localClockOnRight)
+                .font(.system(size: 12))
+                .toggleStyle(.checkbox)
+                .disabled(!settings.showSecondClock)
+
             HStack {
                 Text(settings.tr(.dateFormat))
                     .font(.system(size: 12))

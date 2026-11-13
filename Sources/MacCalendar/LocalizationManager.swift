@@ -91,6 +91,7 @@ public struct L10n {
         case sameTime
         case hoursDiff(String)
         case todayWithDash
+        case localClockOnRight
         case checkForUpdates
         case checkingForUpdates
         case updateUpToDate
@@ -163,6 +164,7 @@ public struct L10n {
             case .sameTime: return "Aynı saat"
             case .hoursDiff(let diff): return "\(diff) sa"
             case .todayWithDash: return "Bugün • "
+            case .localClockOnRight: return "Yerel Saat En Sağda"
             case .checkForUpdates: return "Güncellemeleri Denetle…"
             case .checkingForUpdates: return "Denetleniyor…"
             case .updateUpToDate: return "MacCalendar güncel."
@@ -237,6 +239,7 @@ public struct L10n {
             case .sameTime: return "Same time"
             case .hoursDiff(let diff): return "\(diff) hrs"
             case .todayWithDash: return "Today • "
+            case .localClockOnRight: return "Local Time on the Right"
             case .checkForUpdates: return "Check for Updates…"
             case .checkingForUpdates: return "Checking…"
             case .updateUpToDate: return "MacCalendar is up to date."

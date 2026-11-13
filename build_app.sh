@@ -6,7 +6,7 @@ set -e
 cd "$(dirname "$0")"
 
 APP_NAME="MacCalendar"
-VERSION="1.2.0"
+VERSION="1.3.0"
 SWIFT_FLAGS=(-O)
 BUNDLE_DIR="${APP_NAME}.app"
 if [[ "${1:-}" == "--debug" ]]; then
